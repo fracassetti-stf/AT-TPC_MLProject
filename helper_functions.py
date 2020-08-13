@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
+                             matthews_corrcoef)
 
 def plot_confusion_matrix(y_true,
                           y_pred,
                           classes,
                           title=None,
                           cmap=plt.cm.Blues):
+    
     """This function prints and plots the confusion matrix.
     
     Adapted from:
@@ -59,9 +61,14 @@ def plot_3d_event(dataset,
     
     """This function plots a single event in a 3d plot
     with x,y,z for each pad fired
-    dataset = AllData (unless you create different list)
-    labels = Labels (used for setting beam or reaction in title)
-    idx = index of event in dataset
+    
+    Arguments:
+        dataset = AllData (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
     """
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111, projection='3d')
@@ -86,3 +93,36 @@ def plot_3d_event(dataset,
     ax.set_ylabel('Y[mm]')
     ax.set_zlabel('Z[mm]')
     plt.show()
+    
+def print_model_performance(labels, 
+                            predictions,
+                            title = "INPUT SET TYPE"):
+    
+    """This function prints performance statistics of a model: confusion matrix, precision,
+    f1-score and mathews correlation coefficient.
+    
+    Arguments:
+        dataset = AllData (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
+    """
+    
+    accuracy = accuracy_score(labels, predictions)
+    precision = precision_score(labels, predictions)
+    recall = recall_score(labels, predictions)
+    confmat = confusion_matrix(labels, predictions)
+    f1 = f1_score(labels, predictions)
+    mcc = matthews_corrcoef(labels, predictions)
+    
+    print("Model performance for %s set:"%title)
+    print("--------------------------------------------------------\n")
+    print("Accuracy:", accuracy)
+    print("Precision:", precision)
+    print("Recall:", recall)
+    print("F1-score:", f1)
+    print("MCC:", mcc)
+    plot_confusion_matrix(labels, predictions, ["beam","reaction"])
+    print()
