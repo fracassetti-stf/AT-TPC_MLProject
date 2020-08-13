@@ -1,7 +1,7 @@
 # AT_Project
 AT-TPC Final Project - TALENT School on Machine learning
 
-BRANCHES: 
+BRANCHES:  
 STEFANO is working on the branch SFprojectfile  
 ANDREAS is working on the branch ACprojectfile  
 AHMED (guess what?!) is working on AYprojectile  
