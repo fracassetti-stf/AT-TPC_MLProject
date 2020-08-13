@@ -17,4 +17,4 @@ img(folder) > folder containing images to be used in the report.
 
 
 ### Note to the reader & disclamed:  
-If something does not make sense, it is because we do not use git properly (yes, we are aware of that).  
+### If something does not make sense, it is because we do not use git properly (yes, we are aware of that).  
