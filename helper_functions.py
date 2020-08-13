@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
                              matthews_corrcoef)
+from mpl_toolkits.mplot3d import Axes3D
 
 def plot_confusion_matrix(y_true,
                           y_pred,
@@ -85,9 +86,9 @@ def plot_3d_event(dataset,
     
     ax.scatter(xvalues, yvalues, zvalues, marker='o')
     if (labels[idx]==0):
-        ax.set_title('Beam Event')
+        ax.set_title('Beam Event', pad = 15, fontsize = 14)
     else:
-        ax.set_title('Reaction Event')
+        ax.set_title('Reaction Event', pad = 15, fontsize = 14)
     
     ax.set_xlabel('X[mm]')
     ax.set_ylabel('Y[mm]')
@@ -126,3 +127,69 @@ def print_model_performance(labels,
     print("MCC:", mcc)
     plot_confusion_matrix(labels, predictions, ["beam","reaction"])
     print()
+    
+def make_nn_plots(history):
+    
+    """This function prints performance of a neural network per epoch (model loss & accuracy)
+    
+    Arguments:
+        history: history object obtained when fitting a tensorflow neural network
+    Returns:
+        None
+    """
+    
+    fig, ax = plt.subplots(1, 2, figsize=(14, 6))
+    num_epochs = len(history.history['loss'])
+    ax[0].plot(history.history['loss'], label='training')
+    ax[0].plot(history.history['val_loss'], label='validation')
+    ax[0].set_title("Model loss")
+    ax[0].set_xlabel("Epoch")
+    ax[0].set_ylabel("Loss")
+    ax[0].set_xticks(np.arange(num_epochs))
+    ax[0].legend()
+
+    ax[1].plot(history.history['accuracy'], label='training')
+    ax[1].plot(history.history['val_accuracy'], label='validation')
+    ax[1].set_title("Model accuracy")
+    ax[1].set_xlabel("Epoch")
+    ax[1].set_ylabel("Accuracy")
+    ax[1].set_xticks(np.arange(num_epochs))
+    ax[1].legend()
+    
+def load_data(file):
+    
+    """This function loads the dataset and removes empty events
+    
+    Arguments:
+        file: file containing dataset
+    Returns:
+        AllData : list containing features for nonempty events
+        Labels: numpy ndarray containing labels for nonempty events
+    """
+    
+    AllDataList = []
+    for i in range(len(file.keys())):
+        KeyString = "Event_[" + str(i) +"]"
+        AllDataList.append(file[KeyString][:])
+
+    print("Dataset contains " + str(len(AllDataList)) + " events")
+    
+    
+    LabelsList = []
+    AllData = []
+    for i in range(len(AllDataList)):
+        if (len(AllDataList[i])>0):
+            AllData.append(AllDataList[i])
+            if (i%2==0):
+                LabelsList.append(1)
+            else:
+                LabelsList.append(0)
+
+
+
+    Labels = np.array(LabelsList)
+
+    print("Dataset contains " + str(len(AllData)) + " non-empty events")
+    
+    return AllData, Labels
+    
