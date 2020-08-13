@@ -2,8 +2,8 @@
 AT-TPC Final Project - TALENT School on Machine learning
 
 BRANCHES: 
-STEFANO is working on the branch 
-ANDREAS is working on the branch 
+STEFANO is working on the branch # SFprojectfile
+ANDREAS is working on the branch # ACprojectfile
 
 ******************************************************  
 CODE:  
