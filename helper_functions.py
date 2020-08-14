@@ -86,9 +86,9 @@ def plot_3d_event(dataset,
     
     ax.scatter(xvalues, yvalues, zvalues, marker='o')
     if (labels[idx]==0):
-        ax.set_title('Beam Event', pad = 15, fontsize = 14)
+        ax.set_title('Beam Event #' + str(idx), pad = 15, fontsize = 14)
     else:
-        ax.set_title('Reaction Event', pad = 15, fontsize = 14)
+        ax.set_title('Reaction Event #' + str(idx), pad = 15, fontsize = 14)
     
     ax.set_xlabel('X[mm]')
     ax.set_ylabel('Y[mm]')
@@ -176,6 +176,7 @@ def load_data(file):
     
     
     LabelsList = []
+    EmptyDataList = []
     AllData = []
     for i in range(len(AllDataList)):
         if (len(AllDataList[i])>0):
@@ -184,11 +185,14 @@ def load_data(file):
                 LabelsList.append(1)
             else:
                 LabelsList.append(0)
+        else:
+            EmptyDataList.append(i)
+
 
 
 
     Labels = np.array(LabelsList)
 
     print("Dataset contains " + str(len(AllData)) + " non-empty events")
-    
+    print("Data contains %i empty events, of indexes:"  % len(EmptyDataList),  EmptyDataList)
     return AllData, Labels
