@@ -192,4 +192,195 @@ def load_data(file):
     print("Dataset contains " + str(len(AllData)) + " non-empty events")
     
     return AllData, Labels
+
+def best_3cl_km(clust3, x_train, x_val, labels_train):
     
+    """This function loads the dataset and removes empty events
+    Instead of x_val you can also pass x_test if needed
+    Only x_train and labels_train are used in finding the best mapping
+    
+    Arguments:
+        clust3 : fitted 3-cluster kmeans method
+        x_train : training features
+        x_val : validation features
+        labels_train : training labels
+    Returns:
+        KM3_pred_train : 3-cluster kmeans predictions for training set
+        KM3_pred_val : numpy ndarray containing labels for nonempty events
+    """
+    
+    KM3_pred_train = clust3.predict(x_train)
+    KM3_pred_val = clust3.predict(x_val)
+
+    #Now we need to find out which cluster is which type of event
+    #We select the one that gives best accuracy on training set
+    #for this we loop over all combinations without trivial ones (all beam or all reaction)
+    #we denote accuracy_train_010 if cluster 0->0, 1->1 and 2->0
+
+    KM3_pred_train_001 = np.zeros(len(KM3_pred_train))
+    KM3_pred_train_010 = np.zeros(len(KM3_pred_train))
+    KM3_pred_train_011 = np.zeros(len(KM3_pred_train))
+    KM3_pred_train_100 = np.zeros(len(KM3_pred_train))
+    KM3_pred_train_101 = np.zeros(len(KM3_pred_train))
+    KM3_pred_train_110 = np.zeros(len(KM3_pred_train))
+    KM3_pred_val_001 = np.zeros(len(KM3_pred_val))
+    KM3_pred_val_010 = np.zeros(len(KM3_pred_val))
+    KM3_pred_val_011 = np.zeros(len(KM3_pred_val))
+    KM3_pred_val_100 = np.zeros(len(KM3_pred_val))
+    KM3_pred_val_101 = np.zeros(len(KM3_pred_val))
+    KM3_pred_val_110 = np.zeros(len(KM3_pred_val))
+
+    for i in range(len(KM3_pred_train)):
+        if (KM3_pred_train[i]==0):
+            KM3_pred_train_001[i] = 0
+            KM3_pred_train_010[i] = 0
+            KM3_pred_train_011[i] = 0
+            KM3_pred_train_100[i] = 1
+            KM3_pred_train_101[i] = 1
+            KM3_pred_train_110[i] = 1
+        if (KM3_pred_train[i]==1):
+            KM3_pred_train_001[i] = 0
+            KM3_pred_train_010[i] = 1
+            KM3_pred_train_011[i] = 1
+            KM3_pred_train_100[i] = 0
+            KM3_pred_train_101[i] = 0
+            KM3_pred_train_110[i] = 1
+        if (KM3_pred_train[i]==2):
+            KM3_pred_train_001[i] = 1
+            KM3_pred_train_010[i] = 0
+            KM3_pred_train_011[i] = 1
+            KM3_pred_train_100[i] = 0
+            KM3_pred_train_101[i] = 1
+            KM3_pred_train_110[i] = 0
+
+    for i in range(len(KM3_pred_val)):
+        if (KM3_pred_val[i]==0):
+            KM3_pred_val_001[i] = 0
+            KM3_pred_val_010[i] = 0
+            KM3_pred_val_011[i] = 0
+            KM3_pred_val_100[i] = 1
+            KM3_pred_val_101[i] = 1
+            KM3_pred_val_110[i] = 1
+        if (KM3_pred_val[i]==1):
+            KM3_pred_val_001[i] = 0
+            KM3_pred_val_010[i] = 1
+            KM3_pred_val_011[i] = 1
+            KM3_pred_val_100[i] = 0
+            KM3_pred_val_101[i] = 0
+            KM3_pred_val_110[i] = 1
+        if (KM3_pred_val[i]==2):
+            KM3_pred_val_001[i] = 1
+            KM3_pred_val_010[i] = 0
+            KM3_pred_val_011[i] = 1
+            KM3_pred_val_100[i] = 0
+            KM3_pred_val_101[i] = 1
+            KM3_pred_val_110[i] = 0
+
+
+
+
+    accuracy_train_001 = accuracy_score(labels_train, KM3_pred_train_001)
+    accuracy_train_010 = accuracy_score(labels_train, KM3_pred_train_010)
+    accuracy_train_011 = accuracy_score(labels_train, KM3_pred_train_011)
+    accuracy_train_100 = accuracy_score(labels_train, KM3_pred_train_100)
+    accuracy_train_101 = accuracy_score(labels_train, KM3_pred_train_101)
+    accuracy_train_110 = accuracy_score(labels_train, KM3_pred_train_110)
+
+    KM3_tr_acc_list = [accuracy_train_001, accuracy_train_010, accuracy_train_011, accuracy_train_100, 
+                       accuracy_train_101, accuracy_train_110]
+    #Uncomment to get the accuracies of the different mappings
+    #print(KM3_tr_acc_list)
+
+    #Finds best accuracy model
+    max_accuracy_KM3_train = max(KM3_tr_acc_list)
+    max_index_KM3 = KM3_tr_acc_list.index(max_accuracy_KM3_train)
+
+    if (max_index_KM3==0):
+        KM3_pred_train = KM3_pred_train_001
+        KM3_pred_val = KM3_pred_val_001
+    elif (max_index_KM3==1):
+        KM3_pred_train = KM3_pred_train_010
+        KM3_pred_val = KM3_pred_val_010
+    elif (max_index_KM3==2):
+        KM3_pred_train = KM3_pred_train_011
+        KM3_pred_val = KM3_pred_val_011
+    elif (max_index_KM3==3):
+        KM3_pred_train = KM3_pred_train_100
+        KM3_pred_val = KM3_pred_val_100
+    elif (max_index_KM3==4):
+        KM3_pred_train = KM3_pred_train_101
+        KM3_pred_val = KM3_pred_val_101
+    elif (max_index_KM3==5):
+        KM3_pred_train = KM3_pred_train_110
+        KM3_pred_val = KM3_pred_val_110
+    
+    return KM3_pred_train, KM3_pred_val
+
+def calc_features(AllData):
+    
+    """This function calculates the features for all events
+    
+    Arguments:
+        AllData : array containing all event data
+    Returns:
+        MeanXPerEvent : mean x per event
+        MeanYPerEvent : mean y per event
+        MeanZPerEvent : mean z per event
+        SumAPerEvent : sum of charges deposited per event
+        PadsPerEvent : nr of pads fired per event
+        MeanWeightedXPerEvent : weighted mean x per event
+        MeanWeightedYPerEvent : weighted mean y per event
+        StDevXPerEvent : standard deviation of x per event
+        StDevYPerEvent : standard deviation of y per event
+        StDevZPerEvent : standard deviation of z per event
+        FracClosePtsPerEvent : fraction of points close to z-axis per event (satisfying x^2+y^2<100)
+    """
+    
+    
+    MeanXPerEvent = np.zeros(len(AllData))
+    MeanYPerEvent = np.zeros(len(AllData))
+    MeanZPerEvent = np.zeros(len(AllData))
+    SumAPerEvent = np.zeros(len(AllData))
+    PadsPerEvent = np.zeros(len(AllData))
+    MeanWeightedXPerEvent = np.zeros(len(AllData))
+    MeanWeightedYPerEvent = np.zeros(len(AllData))
+    StDevXPerEvent = np.zeros(len(AllData))
+    StDevYPerEvent = np.zeros(len(AllData))
+    StDevZPerEvent = np.zeros(len(AllData))
+    FracClosePtsPerEvent = np.zeros(len(AllData))
+    
+    for i in range(len(AllData)):
+
+        for j in range(len(AllData[i])):
+            MeanXPerEvent[i] = MeanXPerEvent[i] + AllData[i][j][0]
+            MeanYPerEvent[i] = MeanYPerEvent[i] + AllData[i][j][1]
+            MeanZPerEvent[i] = MeanZPerEvent[i] + AllData[i][j][2]
+            SumAPerEvent[i] = SumAPerEvent[i] + AllData[i][j][4]
+            MeanWeightedXPerEvent[i] = MeanWeightedXPerEvent[i] + AllData[i][j][0]*AllData[i][j][4]
+            MeanWeightedYPerEvent[i] = MeanWeightedYPerEvent[i] + AllData[i][j][1]*AllData[i][j][4]
+            if (AllData[i][j][0]**2 + AllData[i][j][1]**2 < 100):
+                FracClosePtsPerEvent[i] = FracClosePtsPerEvent[i] + 1 
+
+
+        MeanXPerEvent[i] = MeanXPerEvent[i]/len(AllData[i])
+        MeanYPerEvent[i] = MeanYPerEvent[i]/len(AllData[i])
+        MeanZPerEvent[i] = MeanZPerEvent[i]/len(AllData[i])
+        MeanWeightedXPerEvent[i] = MeanWeightedXPerEvent[i]/len(AllData[i])
+        MeanWeightedYPerEvent[i] = MeanWeightedYPerEvent[i]/len(AllData[i])
+        FracClosePtsPerEvent[i] = FracClosePtsPerEvent[i]/len(AllData[i])
+
+        #second for loop for calculation of standard deviation
+        for j in range(len(AllData[i])):
+            StDevXPerEvent[i] = StDevXPerEvent[i] + (AllData[i][j][0]-MeanXPerEvent[i])**2
+            StDevYPerEvent[i] = StDevYPerEvent[i] + (AllData[i][j][1]-MeanYPerEvent[i])**2
+            StDevZPerEvent[i] = StDevZPerEvent[i] + (AllData[i][j][2]-MeanZPerEvent[i])**2
+
+        StDevXPerEvent[i] = np.sqrt(StDevXPerEvent[i])/(len(AllData[i])-1)
+        StDevYPerEvent[i] = np.sqrt(StDevYPerEvent[i])/(len(AllData[i])-1)
+        StDevZPerEvent[i] = np.sqrt(StDevZPerEvent[i])/(len(AllData[i])-1)
+
+
+        PadsPerEvent[i] = len(AllData[i])
+        
+    return (MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, SumAPerEvent, PadsPerEvent,
+    MeanWeightedXPerEvent, MeanWeightedYPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent,FracClosePtsPerEvent)
