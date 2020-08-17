@@ -148,8 +148,8 @@ def make_nn_plots(history):
     ax[0].set_xticks(np.arange(num_epochs))
     ax[0].legend()
 
-    ax[1].plot(history.history['accuracy'], label='training')
-    ax[1].plot(history.history['val_accuracy'], label='validation')
+    ax[1].plot(history.history['acc'], label='training')
+    ax[1].plot(history.history['val_acc'], label='validation')
     ax[1].set_title("Model accuracy")
     ax[1].set_xlabel("Epoch")
     ax[1].set_ylabel("Accuracy")
