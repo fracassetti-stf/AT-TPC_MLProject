@@ -13,6 +13,8 @@ This session describes how we manage the collaboration, through this GitHub fold
 This session describes what this project is meant to look like, and our final goal. 
 
 ---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 
 ## 1) Recent updates on the work: (please indicate the date and your name) 
 ### 2020_08_18 SF: Labels changed. 
