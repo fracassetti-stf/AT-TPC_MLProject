@@ -128,33 +128,50 @@ def print_model_performance(labels,
     plot_confusion_matrix(labels, predictions, ["beam","reaction"])
     print()
     
-def make_nn_plots(history):
+def make_nn_plots(history, min_acc = 0.95):
     
     """This function prints performance of a neural network per epoch (model loss & accuracy)
     
     Arguments:
         history: history object obtained when fitting a tensorflow neural network
+        min_acc: set min value for accuracy. By default the plot has y_min=0.95
     Returns:
         None
     """
     
+    
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
+    
     num_epochs = len(history.history['loss'])
-    ax[0].plot(history.history['loss'], label='training')
-    ax[0].plot(history.history['val_loss'], label='validation')
-    ax[0].set_title("Model loss")
+
+    # Loss **********************
+    ax[0].set_title("Model Loss")
+    # X-axis
     ax[0].set_xlabel("Epoch")
+    ax[0].set_xlim(1,num_epochs)
+    ax[0].set_xticks(range(1,num_epochs+1))
+    # Y-axis
     ax[0].set_ylabel("Loss")
-    ax[0].set_xticks(np.arange(num_epochs))
+
+    # Plotting
+    ax[0].plot(range(1,num_epochs+1),history.history['loss'], label='Training')
+    ax[0].plot(range(1,num_epochs+1),history.history['val_loss'], label='Validation')  
     ax[0].legend()
 
-    ax[1].plot(history.history['acc'], label='training')
-    ax[1].plot(history.history['val_acc'], label='validation')
-    ax[1].set_title("Model accuracy")
+    # Accuracy **********************
+    ax[1].set_title("Model Accuracy")
+    # X-axis
     ax[1].set_xlabel("Epoch")
+    ax[1].set_xlim(1,num_epochs)
+    ax[1].set_xticks(range(1,num_epochs+1))
+    # Y-axis
     ax[1].set_ylabel("Accuracy")
-    ax[1].set_xticks(np.arange(num_epochs))
+    ax[1].set_ylim(min_acc,1)
+    # Plotting
+    ax[1].plot(range(1,num_epochs+1),history.history['acc'], label='Training')
+    ax[1].plot(range(1,num_epochs+1),history.history['val_acc'], label='Validation')
     ax[1].legend()
+    
     
 def load_data(file):
     
