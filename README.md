@@ -14,7 +14,7 @@ This session describes what this project is meant to look like, and our final go
 
 ---------------------------------------------------------------------------------
 
-# 1) Recent updates on the work: (please indicate the date and your name) 
+## 1) Recent updates on the work: (please indicate the date and your name) 
 ### 2020_08_18 SF: Labels changed. 
 The correct labels are even=beam, odd=reaction. I am working on that.  
 
@@ -31,7 +31,7 @@ Maybe some of this is obvious to some of you, but not everyone has use Git exten
 
 
 
-### 3) Important information on the project  
+## 3) Important information on the project  
 AT-TPC Final Project - TALENT School on Machine learning  
 Deadline: 31/08/2020  
 
