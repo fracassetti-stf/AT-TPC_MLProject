@@ -173,12 +173,12 @@ def make_nn_plots(history, min_acc = 0.95):
     ax[1].legend()
     
     
-def load_data(file):
+def load_data(hf):
     
     """This function loads the dataset and removes empty events
     
     Arguments:
-        file: file containing dataset
+        hf: file containing dataset
     Returns:
         AllData : list containing features for nonempty events
         Labels: numpy ndarray containing labels for nonempty events
@@ -188,15 +188,7 @@ def load_data(file):
     for i in range(len(hf.keys())):
         KeyString = "Event_[" + str(i) +"]"
         AllDataList.append(hf[KeyString][:]) # each list element is an event 2d matrix
-
-    print("Dataset contains " + str(len(AllDataList)) + " events")
-    # Printing a full DataSet (event)
-    print(">>> Printing the first event DataSet: \n")
-    print(AllDataList[0], '\n') # same as print(hf["Event_[0]"][:])
-    print(">>> Printing the first row of the first event:")
-    print(AllDataList[0][0], '\n')
-    print(">>> Printing the first feature (x) of the first row of Event_[0]:")
-    print(AllDataList[0][0][0], '\n')
+    
     
     # Assigning lables and cleaning empy events
     
@@ -207,23 +199,41 @@ def load_data(file):
 
     # List of not empty Events
     DataList = []
-
+    
+    beam = 0 # non-empty beam events
+    reaction = 0 # non-empty reaction events
+    
     for i in range(len(AllDataList)):
         if (len(AllDataList[i])>0): # Choosing only not empy events
-            DataList.append(AllDataList[i])     
-            if (i%2==0): # Reaction Event (even) --> label = 1
-                LabelsList.append(1)
-            else:        # Beam Event (odd)     --> label = 0
+            DataList.append(AllDataList[i]) 
+            
+            if (i%2==0): # Beam Event (even) --> label = 0
                 LabelsList.append(0)
+                beam = beam + 1
+            else:        # Reaction Event (odd)     --> label = 1
+                LabelsList.append(1)
+                reaction = reaction + 1
         else:
             EmptyDataList.append(i)
-
+                
     # Converting List in a Numpy Array: it is faster and easier to handle.
     Labels = np.array(LabelsList)
 
-    print("Dataset contains " + str(len(DataList)) + " non-empty events")
+    print("Dataset contains " + str(len(AllDataList)) + " events")
     print("Data contains %i empty events, of indexes:"  % len(EmptyDataList),  EmptyDataList)
-
+    print("")
+    print("Dataset contains " + str(len(DataList)) + " non-empty events:")
+    print(str(beam) + " Beam Events, and " + str(reaction) + " Reaction Events\n")
+   
+    # Printing a full DataSet (event)
+    print(">>> Printing Event_[0]:")
+    print("Printing the first event DataSet (i.e. Event_[0]):")
+    print(AllDataList[0], '\n') # same as print(hf["Event_[0]"][:])
+    print("Printing the first row of Event_[0]:")
+    print(AllDataList[0][0], '\n')
+    print("Printing the first feature (x) of the first row of Event_[0]:")
+    print(AllDataList[0][0][0], '\n')
+    
     return DataList, Labels
 
 
