@@ -27,21 +27,6 @@ The correct labels are even=beam, odd=reaction. I am working on that.
 
 ## 2) Work Organization: 
 BRANCHES:  
-<<<<<<< HEAD
-STEFANO is working on the branch SFprojectfile  
-ANDREAS is working on the branch ACprojectfile  
-AHMED (guess what?!) is working on AYprojectile  
-Haoran is working on the branch HSprojectfile
-******************************************************  
-CODE:  
-DataFiles(folder) > Data Received, to be anbalysed in this project  
-ATTPCProject      > Code for solving the task assigned.  
-
-******************************************************  
-REPORT:  
-AT_Project  > Report to be delivered, summarizing the work done, and describing the main step taken  
-img(folder) > folder containing images to be used in the report.  
-=======
 Everyone is taking a different branch. Anyway, more people can work simultaneously on the same file (or same portion of code). Conflicts must be resolved manually carefully. Please, if your are not sure what to do, ask before commits.  
 Rule: you can always commit to your branch (it is your personal space), but if you want to merge ask permission, or discuss with your colleagues.  
 Maybe some of this is obvious to some of you, but not everyone has use Git extensively before.
@@ -61,7 +46,3 @@ AT_Report: This file will be the final report. In the end, it should be run inde
 AT_Project: This file is the "code" where we try things. In the end it should look very similar to the report, be with only really needed description or comments. In principle, this file should not be delivered, since every infomration should be already included and described in the Report.  
 
 The idea is that one perform taks in the Project file, he/she tests it, and only when it works just fine, he/she import the code in the report, where he/she adds extra information, and produce better outputs. 
-
-
-
->>>>>>> 5b152dbde26ce8890e32b56e99ee6383c5ef7d2f
