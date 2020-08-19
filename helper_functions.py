@@ -4,6 +4,10 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_
                              matthews_corrcoef)
 from mpl_toolkits.mplot3d import Axes3D
 
+import tensorflow as tf
+# This is simply an alias for convenience
+layers = tf.keras.layers
+
 def plot_confusion_matrix(y_true,
                           y_pred,
                           classes,
@@ -224,19 +228,8 @@ def load_data(hf):
     print("")
     print("Dataset contains " + str(len(DataList)) + " non-empty events:")
     print(str(beam) + " Beam Events, and " + str(reaction) + " Reaction Events\n")
-   
-    # Printing a full DataSet (event)
-    print(">>> Printing Event_[0]:")
-    print("Printing the first event DataSet (i.e. Event_[0]):")
-    print(AllDataList[0], '\n') # same as print(hf["Event_[0]"][:])
-    print("Printing the first row of Event_[0]:")
-    print(AllDataList[0][0], '\n')
-    print("Printing the first feature (x) of the first row of Event_[0]:")
-    print(AllDataList[0][0][0], '\n')
     
     return DataList, Labels
-
-
 
 
 
@@ -437,3 +430,49 @@ def calc_features(DataList):
         
     return (MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, SumAPerEvent, PadsPerEvent,
     MeanWeightedXPerEvent, MeanWeightedYPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent,FracClosePtsPerEvent)
+
+
+def build_pretrained_vgg_model(input_shape, num_classes):
+    """Constructs a CNN with a VGG16's convolutional base and two fully-connected hidden layers on top.
+    The convolutional base is frozen (the weights can't be updated) and has weights from training on the ImageNet dataset.
+
+    Returns:
+    The model.
+    """
+# This loads the VGG16 model from TensorFlow with ImageNet weights
+    vgg_model = tf.keras.applications.VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
+    
+# First we flatten out the features from the VGG16 model
+    net = layers.Flatten()(vgg_model.output)
+
+# We create a new fully-connected layer that takes the flattened features as its input
+    net = layers.Dense(512, activation=tf.nn.relu)(net)
+# And we add one more hidden layer
+    net = layers.Dense(512, activation=tf.nn.relu)(net)
+
+# Then we add a final layer which is connected to the previous layer and
+# groups our images into one of the three classes
+    output = layers.Dense(num_classes, activation=tf.nn.softmax)(net)
+
+# Finally, we create a new model whose input is that of the VGG16 model and whose output
+# is the final new layer we just created
+    model = tf.keras.Model(inputs=vgg_model.input, outputs=output)
+    
+# We loop through all layers except the last four and specify that we do not want 
+# their weights to be updated during training. Again, the weights of the convolutional
+# layers have already been trained for general-purpose feature extraction, and we only
+# want to update the fully-connected layers that we just added.
+    for layer in model.layers[:-4]:
+        layer.trainable = False
+
+    return model
+
+
+def normalize_image_data(images):
+    """ Takes an imported set of images and normalizes values to between
+    0 and 1 using min-max scaling across the whole image set.
+    """
+    img_max = np.amax(images)
+    img_min = np.amin(images)
+    images = (images - img_min) / (img_max - img_min)
+    return images
