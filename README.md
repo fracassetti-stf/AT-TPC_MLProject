@@ -17,6 +17,10 @@ This session describes what this project is meant to look like, and our final go
 ---------------------------------------------------------------------------------
 
 ## 1) Recent updates on the work: (please indicate the date and your name) 
+
+### 2020_08_19 SF: Trying CNN (using VGG16).  
+I have upated my AT_Project file: I have converted (x,y) projection in images, and then I tried to apply CNN. At this point it seems not to work. I will debug it in the next days, and try again. Have a look at this file in case you want to try CNN as well. It may be useful. 
+
 ### 2020_08_18 SF: Labels changed. 
 The correct labels are even=beam, odd=reaction. I am working on that.  
 
