@@ -35,7 +35,7 @@ def plot_confusion_matrix(y_true,
     # Compute confusion matrix
     cm = confusion_matrix(y_true, y_pred)
 
-    fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=80)
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
     # We want to show all ticks...
