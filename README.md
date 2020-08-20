@@ -1,9 +1,9 @@
-## This is the description of my branch.  
+## This is the description of my branch.
 
-## Report  
+### Report 
 HEAD version of the report.  
 
-## helper_function.py  
+### helper_function.py
 HEAD version of the helper functions.  
 
 ### CNN  
