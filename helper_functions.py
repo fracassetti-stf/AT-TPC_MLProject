@@ -122,7 +122,7 @@ def print_model_performance(labels,
     f1 = f1_score(labels, predictions)
     mcc = matthews_corrcoef(labels, predictions)
     
-    print("Model performance for %s set:"%title)
+    print("Model performance for %s set:" %title)
     print("--------------------------------------------------------")
     print("Accuracy  : {:.2f}".format(accuracy*100) + "%")
     print("Precision : {:.2f}".format(precision*100) + "%")
