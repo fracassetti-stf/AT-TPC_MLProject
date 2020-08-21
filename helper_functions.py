@@ -345,6 +345,83 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
     return model
 
+def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
+    
+    if not (isinstance(n_cl, int) or n_cl<2):
+        sys.exit('Cluster number not fine!')
+    
+
+    """This function loads the dataset and removes empty events
+    Instead of x_val you can also pass x_test if needed
+    Only x_train and labels_train are used in finding the best mapping
+    
+    Arguments:
+        clust3 : fitted n-cluster kmeans method
+        x_train : training features
+        x_val : validation features
+        labels_train : training labels
+    Returns:
+        KM3_pred_train : 3-cluster kmeans predictions for training set
+        KM3_pred_val : numpy ndarray containing labels for nonempty events
+    """
+    
+    n_cmb = 2**n_cl-2 # possible combinations of assignments clusters to labels
+    
+    KM_pred_train = clust.predict(x_train)
+    KM_pred_train_cmb = np.zeros((len(KM_pred_train), n_cmb))
+    
+    KM_pred_val = clust.predict(x_val)
+    KM_pred_val_cmb = np.zeros((len(KM_pred_val), n_cmb))    
+    
+    #Now we need to find out which cluster is which type of event
+    #We select the one that gives best accuracy on training set
+    #for this we loop over all combinations without trivial ones (all beam or all reaction)
+    #we denote accuracy_train_010 if cluster 0--> labels 0, cl_1--> lb_1 and cl_2 --> lb_0
+
+    cl_ass = np.zeros((n_cmb,n_cl))
+    acc_train = np.zeros(n_cmb)
+    acc_val = np.zeros(n_cmb)
+    # mapping clusters = 0,1,2 in different combination of labels = 0,1
+    # there are 6 combination possible listed below
+    
+    # Calculate possible Cluster to labels assignment 
+    for cmb in np.arange(1,n_cmb+1):
+        for binary in range(n_cl):
+            cl_ass[cmb-1,binary] = int(format(cmb, 'b').zfill(n_cl)[binary])
+        
+    # Convert cluster in labels, as dictated from cl_ass
+    for cmb in range(n_cmb): 
+        for i in range(len(KM_pred_train)):
+            for cl_value in range(n_cl):
+                if KM_pred_train[i]== cl_value:
+                    KM_pred_train_cmb[i,cmb]= cl_ass[cmb,cl_value]
+
+    for cmb in range(n_cmb): 
+        for i in range(len(KM_pred_val)):
+            for cl_value in range(n_cl):
+                if KM_pred_val[i]== cl_value:
+                    KM_pred_val_cmb[i,cmb]= cl_ass[cmb,cl_value]
+                    
+        # Calculate accuracy for every cl_ass
+    for cmb in range(n_cmb): 
+        acc_train[cmb] = accuracy_score(labels_train, KM_pred_train_cmb[:,cmb])
+   
+    #Finds best accuracy model
+    max_accuracy_KM = np.amax(acc_train)
+    max_index_KM = np.where(acc_train == np.amax(acc_train))[0]
+    
+    # Printing results
+    print("Max accuracy obtained is {:.3f}".format(max_accuracy_KM), " using the combination number :", max_index_KM[0]+1)
+    assoc = list(zip(np.arange(3), cl_ass[max_index_KM[0],:]))
+
+    print('Combination %i has the "Cluster to Lables" association = ' %(max_index_KM[0]+1) + str(assoc) )
+    
+    
+    KM_pred_train = KM_pred_train_cmb[:,max_index_KM]
+    KM_pred_val = KM_pred_val_cmb[:,max_index_KM]
+    
+    return KM_pred_train, KM_pred_val
+
 
 def normalize_image_data(images):
     """ Takes an imported set of images and normalizes values to between
