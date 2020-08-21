@@ -352,5 +352,15 @@ def normalize_image_data(images):
     """
     img_max = np.amax(images)
     img_min = np.amin(images)
-    images = (images - img_min) / (img_max - img_min)
+    #Debug 
+    print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
+    if img_max==0:
+        print("Error: File given is made by black images (only zeros)")
+    else: 
+        if (img_max - img_min) > 0:
+            images = (images - img_min) / (img_max - img_min)
+        else: 
+            images = (images - img_min) / img_max
+            print("Error: File given is made by same values images, now it has been normalized to 1")
+            
     return images
