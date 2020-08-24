@@ -33,7 +33,7 @@ The correct labels are even=beam, odd=reaction. I am working on that.
 - Also the most updated version of the helper_function.py it is in the same branch. Please use these file as starting point, to avoid extra work.  
 -The most updated version of the Project (on Logistic Regression, Random Forest, DNN, and K-Means)is the one of Andreas, but of course everyone is working on different Models, so this is not so important.
 
-### 2020_08_24 AC: Updated report + helper funtions.
+### 2020_08_24 AC: Updated report + helper functions.
 I have added a new report version adding some sections from my projectfile to my branch. Minor edit helper function.
 See AT_Report.ipynb and helper_functions.py in my branch
 
