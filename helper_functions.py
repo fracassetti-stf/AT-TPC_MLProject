@@ -425,19 +425,20 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
 
 def normalize_image_data(images):
     """ Takes an imported set of images and normalizes values to between
-    0 and 1 using min-max scaling across the whole image set.
+    0 and 255 using min-max scaling across the whole image set.
     """
     img_max = np.amax(images)
     img_min = np.amin(images)
     #Debug 
-    print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
+    #print('While executing "normalize_image_data":')
+    #print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
     if img_max==0:
         print("Error: File given is made by black images (only zeros)")
     else: 
         if (img_max - img_min) > 0:
-            images = (images - img_min) / (img_max - img_min)
+            images = np.around( 255 * (images - img_min) / (img_max - img_min))
         else: 
-            images = (images - img_min) / img_max
+            images = 0
             print("Error: File given is made by same values images, now it has been normalized to 1")
             
     return images
