@@ -330,7 +330,7 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
 # Then we add a final layer which is connected to the previous layer and
 # groups our images into one of the three classes
-    output = layers.Dense(num_classes, activation=tf.nn.softmax)(net)
+    output = layers.Dense(num_classes, activation=tf.nn.sigmoid)(net)
 
 # Finally, we create a new model whose input is that of the VGG16 model and whose output
 # is the final new layer we just created
