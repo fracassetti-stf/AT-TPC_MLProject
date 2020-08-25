@@ -24,6 +24,10 @@ We planned a skype meeting in order to discuss on the project, join all the mate
 ### 2020_08_25 SF: Completed the AutoEncoder + KMeans (by Luca Morselli)  
 I have coped Luca file on autoencoder and modified in my branch. It is now working and finilised. I have used some functions in helper_functions, in order to reduce the code. I have also used different number of cluster with kmeans ans choose the best model (using "best_km_custer" function).  
 
+### 2020_08_24 AC: Updated report + helper functions.
+I have added a new report version adding some sections from my projectfile to my branch. Minor edit helper function.
+See AT_Report.ipynb and helper_functions.py in my branch
+
 
 ### 2020_08_24 SF: Finalizing CNN (together with Andreas)   
 I have worked on the CNN model, now it perfroms well. I have used two model , one costumized and the VGG16.   
@@ -46,10 +50,6 @@ The correct labels are even=beam, odd=reaction. I am working on that.
 - You can find the most updated code in AT_Report in my branch (SFprojectfile). This Report contains the description of all the phase that can be called "Data import and Data Visualization".  It contains also the description (and implementation) of some models: Logistic Regression, Random Forest, DNN, and K-Means. The code of these models has been taken from AC branch, and I have added some description, and optimize the output for better visualization. At this point, the comments/description of the various model can be considered only a draft. More info can be added, better grammar can be used.  
 - Also the most updated version of the helper_function.py it is in the same branch. Please use these file as starting point, to avoid extra work.  
 -The most updated version of the Project (on Logistic Regression, Random Forest, DNN, and K-Means)is the one of Andreas, but of course everyone is working on different Models, so this is not so important.
-
-### 2020_08_24 AC: Updated report + helper functions.
-I have added a new report version adding some sections from my projectfile to my branch. Minor edit helper function.
-See AT_Report.ipynb and helper_functions.py in my branch
 
 ## 2) Work Organization: 
 BRANCHES:  
