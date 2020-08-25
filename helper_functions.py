@@ -155,7 +155,8 @@ def make_nn_plots(history, min_acc = 0.95):
     max_x_ticks = 10 
     if num_epochs > max_x_ticks: 
         x_step = math.floor(num_epochs / max_x_ticks)
-        
+    else:
+        x_step = 1
     # Loss **********************
     ax[0].set_title("Model Loss")
     # X-axis
@@ -338,7 +339,7 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
 # Then we add a final layer which is connected to the previous layer and
 # groups our images into one of the three classes
-    output = layers.Dense(num_classes, activation=tf.nn.sigmoid)(net)
+    output = layers.Dense(1, activation=tf.nn.sigmoid)(net)
 
 # Finally, we create a new model whose input is that of the VGG16 model and whose output
 # is the final new layer we just created
