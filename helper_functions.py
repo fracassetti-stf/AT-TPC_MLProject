@@ -8,6 +8,8 @@ import tensorflow as tf
 # This is simply an alias for convenience
 layers = tf.keras.layers
 
+import math
+
 def plot_confusion_matrix(y_true,
                           y_pred,
                           classes,
@@ -144,16 +146,22 @@ def make_nn_plots(history, min_acc = 0.95):
     """
     
     
+    
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
     
     num_epochs = len(history.history['loss'])
-
+    
+    # avoid plotting every epochs ticks (e.g. in autoencoders num_epochs is definitely too  high)
+    max_x_ticks = 10 
+    if num_epochs > max_x_ticks: 
+        x_step = math.floor(num_epochs / max_x_ticks)
+        
     # Loss **********************
     ax[0].set_title("Model Loss")
     # X-axis
     ax[0].set_xlabel("Epoch")
     ax[0].set_xlim(1,num_epochs)
-    ax[0].set_xticks(range(1,num_epochs+1))
+    ax[0].set_xticks(range(1,num_epochs+1,x_step))
     # Y-axis
     ax[0].set_ylabel("Loss")
 
@@ -167,7 +175,7 @@ def make_nn_plots(history, min_acc = 0.95):
     # X-axis
     ax[1].set_xlabel("Epoch")
     ax[1].set_xlim(1,num_epochs)
-    ax[1].set_xticks(range(1,num_epochs+1))
+    ax[1].set_xticks(range(1,num_epochs+1,x_step))
     # Y-axis
     ax[1].set_ylabel("Accuracy")
     ax[1].set_ylim(min_acc,1)
@@ -411,16 +419,17 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
     max_index_KM = np.where(acc_train == np.amax(acc_train))[0]
     
     # Printing results
-    print("Max accuracy obtained is {:.3f}".format(max_accuracy_KM), " using the combination number :", max_index_KM[0]+1)
-    assoc = list(zip(np.arange(3), cl_ass[max_index_KM[0],:]))
-
+    print("KMeans with %i clusters performance:"%n_cl)
+    print("Max accuracy obtained is {:.4f}".format(max_accuracy_KM), " using the combination number :", max_index_KM[0]+1)
+    assoc = list(zip(np.arange(n_cl), cl_ass[max_index_KM[0],:]))
     print('Combination %i has the "Cluster to Lables" association = ' %(max_index_KM[0]+1) + str(assoc) )
+    print("----------------------------------------------------------")
     
-    
+    assoc = np.array(assoc)
     KM_pred_train = KM_pred_train_cmb[:,max_index_KM]
     KM_pred_val = KM_pred_val_cmb[:,max_index_KM]
     
-    return KM_pred_train, KM_pred_val
+    return KM_pred_train, KM_pred_val, assoc
 
 
 def normalize_image_data(images):
