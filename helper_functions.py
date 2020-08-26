@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
                              matthews_corrcoef)
 from mpl_toolkits.mplot3d import Axes3D
+import math
 
 import tensorflow as tf
 # This is simply an alias for convenience
@@ -127,8 +128,8 @@ def print_model_performance(labels,
     print("Accuracy  : {:.2f}".format(accuracy*100) + "%")
     print("Precision : {:.2f}".format(precision*100) + "%")
     print("Recall    : {:.2f}".format(recall*100) + "%")
-    print("F1-score  : {:.2f}".format(f1*100) + "%")
-    print("MCC       : {:.2f}".format(mcc*100) + "%")
+    print("F1-score  : {:.4f}".format(f1))
+    print("MCC       : {:.4f}".format(mcc))
     plot_confusion_matrix(labels, predictions, ["beam","reaction"])
     print()
     
@@ -138,22 +139,29 @@ def make_nn_plots(history, min_acc = 0.95):
     
     Arguments:
         history: history object obtained when fitting a tensorflow neural network
-        min_acc: set min value for accuracy. By default the plot has y_min=0.95
+        min_acc: set min axis value for accuracy. By default the plot has y_min=0.95
     Returns:
         None
     """
     
     
+    
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
     
     num_epochs = len(history.history['loss'])
-
+    
+    # avoid plotting every epochs ticks (e.g. in autoencoders num_epochs is definitely too  high)
+    max_x_ticks = 10 
+    if num_epochs > max_x_ticks: 
+        x_step = math.floor(num_epochs / max_x_ticks)
+    else:
+        x_step = 1
     # Loss **********************
     ax[0].set_title("Model Loss")
     # X-axis
     ax[0].set_xlabel("Epoch")
     ax[0].set_xlim(1,num_epochs)
-    ax[0].set_xticks(range(1,num_epochs+1))
+    ax[0].set_xticks(range(1,num_epochs+1,x_step))
     # Y-axis
     ax[0].set_ylabel("Loss")
 
@@ -167,7 +175,7 @@ def make_nn_plots(history, min_acc = 0.95):
     # X-axis
     ax[1].set_xlabel("Epoch")
     ax[1].set_xlim(1,num_epochs)
-    ax[1].set_xticks(range(1,num_epochs+1))
+    ax[1].set_xticks(range(1,num_epochs+1,x_step))
     # Y-axis
     ax[1].set_ylabel("Accuracy")
     ax[1].set_ylim(min_acc,1)
@@ -175,6 +183,7 @@ def make_nn_plots(history, min_acc = 0.95):
     ax[1].plot(range(1,num_epochs+1),history.history['accuracy'], label='Training')
     ax[1].plot(range(1,num_epochs+1),history.history['val_accuracy'], label='Validation')
     ax[1].legend()
+    
     
     
 def load_data(hf):
@@ -233,128 +242,6 @@ def load_data(hf):
 
 
 
-def best_3cl_km(clust3, x_train, x_val, labels_train):
-    
-    """This function loads the dataset and removes empty events
-    Instead of x_val you can also pass x_test if needed
-    Only x_train and labels_train are used in finding the best mapping
-    
-    Arguments:
-        clust3 : fitted 3-cluster kmeans method
-        x_train : training features
-        x_val : validation features
-        labels_train : training labels
-    Returns:
-        KM3_pred_train : 3-cluster kmeans predictions for training set
-        KM3_pred_val : numpy ndarray containing labels for nonempty events
-    """
-    
-    KM3_pred_train = clust3.predict(x_train)
-    KM3_pred_val = clust3.predict(x_val)
-
-    #Now we need to find out which cluster is which type of event
-    #We select the one that gives best accuracy on training set
-    #for this we loop over all combinations without trivial ones (all beam or all reaction)
-    #we denote accuracy_train_010 if cluster 0->0, 1->1 and 2->0
-
-    KM3_pred_train_001 = np.zeros(len(KM3_pred_train))
-    KM3_pred_train_010 = np.zeros(len(KM3_pred_train))
-    KM3_pred_train_011 = np.zeros(len(KM3_pred_train))
-    KM3_pred_train_100 = np.zeros(len(KM3_pred_train))
-    KM3_pred_train_101 = np.zeros(len(KM3_pred_train))
-    KM3_pred_train_110 = np.zeros(len(KM3_pred_train))
-    KM3_pred_val_001 = np.zeros(len(KM3_pred_val))
-    KM3_pred_val_010 = np.zeros(len(KM3_pred_val))
-    KM3_pred_val_011 = np.zeros(len(KM3_pred_val))
-    KM3_pred_val_100 = np.zeros(len(KM3_pred_val))
-    KM3_pred_val_101 = np.zeros(len(KM3_pred_val))
-    KM3_pred_val_110 = np.zeros(len(KM3_pred_val))
-
-    for i in range(len(KM3_pred_train)):
-        if (KM3_pred_train[i]==0):
-            KM3_pred_train_001[i] = 0
-            KM3_pred_train_010[i] = 0
-            KM3_pred_train_011[i] = 0
-            KM3_pred_train_100[i] = 1
-            KM3_pred_train_101[i] = 1
-            KM3_pred_train_110[i] = 1
-        if (KM3_pred_train[i]==1):
-            KM3_pred_train_001[i] = 0
-            KM3_pred_train_010[i] = 1
-            KM3_pred_train_011[i] = 1
-            KM3_pred_train_100[i] = 0
-            KM3_pred_train_101[i] = 0
-            KM3_pred_train_110[i] = 1
-        if (KM3_pred_train[i]==2):
-            KM3_pred_train_001[i] = 1
-            KM3_pred_train_010[i] = 0
-            KM3_pred_train_011[i] = 1
-            KM3_pred_train_100[i] = 0
-            KM3_pred_train_101[i] = 1
-            KM3_pred_train_110[i] = 0
-
-    for i in range(len(KM3_pred_val)):
-        if (KM3_pred_val[i]==0):
-            KM3_pred_val_001[i] = 0
-            KM3_pred_val_010[i] = 0
-            KM3_pred_val_011[i] = 0
-            KM3_pred_val_100[i] = 1
-            KM3_pred_val_101[i] = 1
-            KM3_pred_val_110[i] = 1
-        if (KM3_pred_val[i]==1):
-            KM3_pred_val_001[i] = 0
-            KM3_pred_val_010[i] = 1
-            KM3_pred_val_011[i] = 1
-            KM3_pred_val_100[i] = 0
-            KM3_pred_val_101[i] = 0
-            KM3_pred_val_110[i] = 1
-        if (KM3_pred_val[i]==2):
-            KM3_pred_val_001[i] = 1
-            KM3_pred_val_010[i] = 0
-            KM3_pred_val_011[i] = 1
-            KM3_pred_val_100[i] = 0
-            KM3_pred_val_101[i] = 1
-            KM3_pred_val_110[i] = 0
-
-
-
-
-    accuracy_train_001 = accuracy_score(labels_train, KM3_pred_train_001)
-    accuracy_train_010 = accuracy_score(labels_train, KM3_pred_train_010)
-    accuracy_train_011 = accuracy_score(labels_train, KM3_pred_train_011)
-    accuracy_train_100 = accuracy_score(labels_train, KM3_pred_train_100)
-    accuracy_train_101 = accuracy_score(labels_train, KM3_pred_train_101)
-    accuracy_train_110 = accuracy_score(labels_train, KM3_pred_train_110)
-
-    KM3_tr_acc_list = [accuracy_train_001, accuracy_train_010, accuracy_train_011, accuracy_train_100, 
-                       accuracy_train_101, accuracy_train_110]
-    #Uncomment to get the accuracies of the different mappings
-    #print(KM3_tr_acc_list)
-
-    #Finds best accuracy model
-    max_accuracy_KM3_train = max(KM3_tr_acc_list)
-    max_index_KM3 = KM3_tr_acc_list.index(max_accuracy_KM3_train)
-
-    if (max_index_KM3==0):
-        KM3_pred_train = KM3_pred_train_001
-        KM3_pred_val = KM3_pred_val_001
-    elif (max_index_KM3==1):
-        KM3_pred_train = KM3_pred_train_010
-        KM3_pred_val = KM3_pred_val_010
-    elif (max_index_KM3==2):
-        KM3_pred_train = KM3_pred_train_011
-        KM3_pred_val = KM3_pred_val_011
-    elif (max_index_KM3==3):
-        KM3_pred_train = KM3_pred_train_100
-        KM3_pred_val = KM3_pred_val_100
-    elif (max_index_KM3==4):
-        KM3_pred_train = KM3_pred_train_101
-        KM3_pred_val = KM3_pred_val_101
-    elif (max_index_KM3==5):
-        KM3_pred_train = KM3_pred_train_110
-        KM3_pred_val = KM3_pred_val_110
-    
-    return KM3_pred_train, KM3_pred_val
 
 def calc_features(DataList):
     
@@ -435,6 +322,7 @@ def calc_features(DataList):
 def build_pretrained_vgg_model(input_shape, num_classes):
     """Constructs a CNN with a VGG16's convolutional base and two fully-connected hidden layers on top.
     The convolutional base is frozen (the weights can't be updated) and has weights from training on the ImageNet dataset.
+
     Returns:
     The model.
     """
@@ -451,7 +339,7 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
 # Then we add a final layer which is connected to the previous layer and
 # groups our images into one of the three classes
-    output = layers.Dense(num_classes, activation=tf.nn.softmax)(net)
+    output = layers.Dense(1, activation=tf.nn.sigmoid)(net)
 
 # Finally, we create a new model whose input is that of the VGG16 model and whose output
 # is the final new layer we just created
@@ -466,16 +354,258 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
     return model
 
+def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
+    
+    if not (isinstance(n_cl, int) or n_cl<2):
+        sys.exit('Cluster number not fine!')
+    
+
+    """This function finds the best mapping form k-means cluster
+    to beam or reaction event for a given number of clusters
+    
+    Arguments:
+        n_cl : number of clusters used in k-means
+        clust : fitted n-cluster kmeans method
+        x_train : training features
+        x_val : validation features
+        labels_train : training labels
+    Returns:
+        KM_pred_train : optimal kmeans predictions for training set
+        KM_pred_val : optimal kmeans predictions for validation set
+        assoc : kmeans cluster to class mapping
+    """
+    
+    n_cmb = 2**n_cl-2 # possible combinations of assignments clusters to labels
+    
+    KM_pred_train = clust.predict(x_train)
+    KM_pred_train_cmb = np.zeros((len(KM_pred_train), n_cmb))
+    
+    KM_pred_val = clust.predict(x_val)
+    KM_pred_val_cmb = np.zeros((len(KM_pred_val), n_cmb))    
+    
+    #Now we need to find out which cluster is which type of event
+    #We select the one that gives best accuracy on training set
+    #for this we loop over all combinations without trivial ones (all beam or all reaction)
+    #we denote accuracy_train_010 if cluster 0--> labels 0, cl_1--> lb_1 and cl_2 --> lb_0
+
+    cl_ass = np.zeros((n_cmb,n_cl))
+    acc_train = np.zeros(n_cmb)
+    acc_val = np.zeros(n_cmb)
+    # mapping clusters = 0,1,2 in different combination of labels = 0,1
+    # there are 6 combination possible listed below
+    
+    # Calculate possible Cluster to labels assignment 
+    for cmb in np.arange(1,n_cmb+1):
+        for binary in range(n_cl):
+            cl_ass[cmb-1,binary] = int(format(cmb, 'b').zfill(n_cl)[binary])
+        
+    # Convert cluster in labels, as dictated from cl_ass
+    for cmb in range(n_cmb): 
+        for i in range(len(KM_pred_train)):
+            for cl_value in range(n_cl):
+                if KM_pred_train[i]== cl_value:
+                    KM_pred_train_cmb[i,cmb]= cl_ass[cmb,cl_value]
+
+    for cmb in range(n_cmb): 
+        for i in range(len(KM_pred_val)):
+            for cl_value in range(n_cl):
+                if KM_pred_val[i]== cl_value:
+                    KM_pred_val_cmb[i,cmb]= cl_ass[cmb,cl_value]
+                    
+        # Calculate accuracy for every cl_ass
+    for cmb in range(n_cmb): 
+        acc_train[cmb] = accuracy_score(labels_train, KM_pred_train_cmb[:,cmb])
+   
+    #Finds best accuracy model
+    max_accuracy_KM = np.amax(acc_train)
+    max_index_KM = np.where(acc_train == np.amax(acc_train))[0]
+    
+    # Printing results
+    print("KMeans with %i clusters performance:"%n_cl)
+    print("Max accuracy obtained is {:.4f}".format(max_accuracy_KM), " using the combination number :", max_index_KM[0]+1)
+    assoc = list(zip(np.arange(n_cl), cl_ass[max_index_KM[0],:]))
+    print('Combination %i has the "Cluster to Lables" association = ' %(max_index_KM[0]+1) + str(assoc) )
+    print("----------------------------------------------------------")
+    
+    assoc = np.array(assoc)
+    KM_pred_train = KM_pred_train_cmb[:,max_index_KM]
+    KM_pred_val = KM_pred_val_cmb[:,max_index_KM]
+    
+    return KM_pred_train, KM_pred_val, assoc
+
 
 def normalize_image_data(images):
     """ Takes an imported set of images and normalizes values to between
-    0 and 1 using min-max scaling across the whole image set.
+    0 and 255 using min-max scaling across the whole image set.
+    Arguments:
+        images : 2d image with amplitude
+    Returns:
+        images : min-max scaled images
     """
     img_max = np.amax(images)
-    print(img_max)
     img_min = np.amin(images)
-    images = (images - img_min) / (img_max - img_min)
-    print(img_min)
- 
-    
+    #Debug 
+    #print('While executing "normalize_image_data":')
+    #print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
+    if img_max==0:
+        print("Error: File given is made by black images (only zeros)")
+    else: 
+        if (img_max - img_min) > 0:
+            images = np.around( 255 * (images - img_min) / (img_max - img_min))
+        else: 
+            images = 0
+            print("Error: File given is made by same values images, now it has been normalized to 1")
+            
     return images
+
+def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, contour=True):
+    """Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb
+       Plots the decision boundary for a classifier on a 2d feature set.
+    Arguments:
+        clf : fitted classifier to be used (needs a predict method)
+        X : 2d feature set
+        y : labels corresponding to X
+        axes : axes limits for plotting
+        alpha : opacity of points
+        contour : whether to show decision boundary or not.
+    Returns:
+        none
+    """
+    from matplotlib.colors import ListedColormap
+    x1s = np.linspace(axes[0], axes[1], 100)
+    x2s = np.linspace(axes[2], axes[3], 100)
+    x1, x2 = np.meshgrid(x1s, x2s)
+    X_new = np.c_[x1.ravel(), x2.ravel()]
+    X_new = np.array(X_new, dtype=np.double)
+    y_pred = clf.predict(X_new).reshape(x1.shape)
+    custom_cmap = ListedColormap(['#fafab0','#9898ff','#a0faa0'])
+    plt.contourf(x1, x2, y_pred, alpha=0.3, cmap=custom_cmap)
+    if contour:
+        custom_cmap2 = ListedColormap(['#7d7d58','#4c4c7f','#507d50'])
+        plt.contour(x1, x2, y_pred, cmap=custom_cmap2, alpha=0.8)
+    plt.plot(X[:, 0][y==1], X[:, 1][y==1], "bs", alpha=alpha)
+    plt.plot(X[:, 0][y==0], X[:, 1][y==0], "yo", alpha=0.8)
+    plt.axis(axes)
+    plt.xlabel(r"$x_1$", fontsize=18)
+    plt.ylabel(r"$x_2$", fontsize=18, rotation=0)
+
+def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
+    
+    """This function creates the visualizations of different models
+    trained on the 2d PCA and TSNE reduced dataset.
+    Adapted from: https://github.com/ageron/handson-ml2
+    
+    Arguments:
+        xSimple_train_PCA : PCA features of training set
+        xSimple_train_TSNE : t-SNE features of training set
+        labels_train : training labels
+    Returns:
+        none
+    """
+    import matplotlib.pyplot as plt
+    #First we fit the models
+    from sklearn.linear_model import LogisticRegression
+    
+    logreg_PCA = LogisticRegression()
+    logreg_PCA.fit(xSimple_train_PCA, Labels_train)
+    LR_pred_train_PCA = logreg_PCA.predict(xSimple_train_PCA)
+    
+    logreg_TSNE = LogisticRegression()
+    logreg_TSNE.fit(xSimple_train_TSNE, Labels_train)
+    LR_pred_train_TSNE = logreg_TSNE.predict(xSimple_train_TSNE)
+    
+    from sklearn.ensemble import RandomForestClassifier
+    
+    RFC_PCA = RandomForestClassifier()
+    RFC_PCA.fit(xSimple_train_PCA, Labels_train)
+    RFC_pred_train_PCA = RFC_PCA.predict(xSimple_train_PCA)
+    
+    RFC_TSNE = RandomForestClassifier()
+    RFC_TSNE.fit(xSimple_train_TSNE, Labels_train)
+    RFC_pred_train_TSNE = RFC_TSNE.predict(xSimple_train_TSNE)
+    
+    from sklearn.cluster import KMeans
+    
+    KM2_PCA = KMeans(n_clusters=2)
+    KM2_PCA.fit(xSimple_train_PCA)
+    KM2_pred_train_PCA = KM2_PCA.predict(xSimple_train_PCA)
+    
+    KM2_TSNE = KMeans(n_clusters=2)
+    KM2_TSNE.fit(xSimple_train_TSNE)
+    KM2_pred_train_TSNE = KM2_TSNE.predict(xSimple_train_TSNE)
+    
+    from sklearn import svm
+    
+    SVM_PCA = svm.SVC()
+    SVM_PCA.fit(xSimple_train_PCA, Labels_train)
+    SVM_pred_train_PCA = SVM_PCA.predict(xSimple_train_PCA)
+    
+    SVM_TSNE = svm.SVC()
+    SVM_TSNE.fit(xSimple_train_TSNE, Labels_train)
+    SVM_pred_train_TSNE = SVM_TSNE.predict(xSimple_train_TSNE)
+    
+    
+    #Make a figure with subplots
+    fig, ax = plt.subplots(3, 2, figsize=(18, 24))
+    
+
+    plt.sca(ax[0][0])
+    plot_decision_boundary(logreg_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    ax[0][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[0][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[0][0].set_title("Logistic regression after PCA", fontsize=18)
+
+    
+   
+    plt.sca(ax[0][1])
+    plot_decision_boundary(logreg_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    ax[0][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[0][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[0][1].set_title("Logistic regression after t-SNE", fontsize=18)
+
+    
+    plt.sca(ax[1][0])
+    plot_decision_boundary(RFC_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    ax[1][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[1][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[1][0].set_title("Random forest after PCA", fontsize=18)
+                           
+    plt.sca(ax[1][1])
+    plot_decision_boundary(RFC_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    ax[1][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[1][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[1][1].set_title("Random forest after t-SNE", fontsize=18)
+    
+    plt.sca(ax[2][0])
+    plot_decision_boundary(SVM_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    ax[2][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[2][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[2][0].set_title("Support vector machine after PCA", fontsize=18)
+                           
+    plt.sca(ax[2][1])
+    plot_decision_boundary(SVM_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    ax[2][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[2][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[2][1].set_title("Support vector machine after t-SNE", fontsize=18)
+    
+    #KMeans does not work properly
+    #plt.sca(ax[3][0])
+    #plot_decision_boundary(KM2_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    #ax[3][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
+    #ax[3][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
+    #ax[3][0].set_title("K-means (2 clusters) after PCA", fontsize=18)
+    #ax[3][0].scatter(KM2_PCA.cluster_centers_[:,0], KM2_PCA.cluster_centers_[:,1], marker='x', s=50, linewidths=50,
+    #        color='k', zorder=11, alpha=1)
+                           
+    #plt.sca(ax[3][1])
+    #plot_decision_boundary(KM2_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    #ax[3][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
+    #ax[3][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
+    #ax[3][1].set_title("K-means (2 clusters) after t-SNE", fontsize=18)
+    #ax[3][1].scatter(KM2_TSNE.cluster_centers_[:,0], KM2_TSNE.cluster_centers_[:,1], marker='x', s=50, linewidths=50,
+     #       color='k', zorder=11, alpha=1)
+    
+
+
+
+      
