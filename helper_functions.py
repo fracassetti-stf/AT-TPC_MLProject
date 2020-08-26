@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
                              matthews_corrcoef)
 from mpl_toolkits.mplot3d import Axes3D
+import math
 
 import tensorflow as tf
 # This is simply an alias for convenience
@@ -127,8 +128,8 @@ def print_model_performance(labels,
     print("Accuracy  : {:.2f}".format(accuracy*100) + "%")
     print("Precision : {:.2f}".format(precision*100) + "%")
     print("Recall    : {:.2f}".format(recall*100) + "%")
-    print("F1-score  : {:.2f}".format(f1*100) + "%")
-    print("MCC       : {:.2f}".format(mcc*100) + "%")
+    print("F1-score  : {:.4f}".format(f1))
+    print("MCC       : {:.4f}".format(mcc))
     plot_confusion_matrix(labels, predictions, ["beam","reaction"])
     print()
     
@@ -138,22 +139,29 @@ def make_nn_plots(history, min_acc = 0.95):
     
     Arguments:
         history: history object obtained when fitting a tensorflow neural network
-        min_acc: set min value for accuracy. By default the plot has y_min=0.95
+        min_acc: set min axis value for accuracy. By default the plot has y_min=0.95
     Returns:
         None
     """
     
     
+    
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
     
     num_epochs = len(history.history['loss'])
-
+    
+    # avoid plotting every epochs ticks (e.g. in autoencoders num_epochs is definitely too  high)
+    max_x_ticks = 10 
+    if num_epochs > max_x_ticks: 
+        x_step = math.floor(num_epochs / max_x_ticks)
+    else:
+        x_step = 1
     # Loss **********************
     ax[0].set_title("Model Loss")
     # X-axis
     ax[0].set_xlabel("Epoch")
     ax[0].set_xlim(1,num_epochs)
-    ax[0].set_xticks(range(1,num_epochs+1))
+    ax[0].set_xticks(range(1,num_epochs+1,x_step))
     # Y-axis
     ax[0].set_ylabel("Loss")
 
@@ -167,7 +175,7 @@ def make_nn_plots(history, min_acc = 0.95):
     # X-axis
     ax[1].set_xlabel("Epoch")
     ax[1].set_xlim(1,num_epochs)
-    ax[1].set_xticks(range(1,num_epochs+1))
+    ax[1].set_xticks(range(1,num_epochs+1,x_step))
     # Y-axis
     ax[1].set_ylabel("Accuracy")
     ax[1].set_ylim(min_acc,1)
@@ -175,6 +183,7 @@ def make_nn_plots(history, min_acc = 0.95):
     ax[1].plot(range(1,num_epochs+1),history.history['accuracy'], label='Training')
     ax[1].plot(range(1,num_epochs+1),history.history['val_accuracy'], label='Validation')
     ax[1].legend()
+    
     
     
 def load_data(hf):
@@ -330,7 +339,7 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
 # Then we add a final layer which is connected to the previous layer and
 # groups our images into one of the three classes
-    output = layers.Dense(num_classes, activation=tf.nn.softmax)(net)
+    output = layers.Dense(1, activation=tf.nn.sigmoid)(net)
 
 # Finally, we create a new model whose input is that of the VGG16 model and whose output
 # is the final new layer we just created
@@ -351,18 +360,19 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
         sys.exit('Cluster number not fine!')
     
 
-    """This function loads the dataset and removes empty events
-    Instead of x_val you can also pass x_test if needed
-    Only x_train and labels_train are used in finding the best mapping
+    """This function finds the best mapping form k-means cluster
+    to beam or reaction event for a given number of clusters
     
     Arguments:
-        clust3 : fitted n-cluster kmeans method
+        n_cl : number of clusters used in k-means
+        clust : fitted n-cluster kmeans method
         x_train : training features
         x_val : validation features
         labels_train : training labels
     Returns:
-        KM3_pred_train : 3-cluster kmeans predictions for training set
-        KM3_pred_val : numpy ndarray containing labels for nonempty events
+        KM_pred_train : optimal kmeans predictions for training set
+        KM_pred_val : optimal kmeans predictions for validation set
+        assoc : kmeans cluster to class mapping
     """
     
     n_cmb = 2**n_cl-2 # possible combinations of assignments clusters to labels
@@ -411,39 +421,55 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
     max_index_KM = np.where(acc_train == np.amax(acc_train))[0]
     
     # Printing results
-    print("Max accuracy obtained is {:.3f}".format(max_accuracy_KM), " using the combination number :", max_index_KM[0]+1)
-    assoc = list(zip(np.arange(3), cl_ass[max_index_KM[0],:]))
-
+    print("KMeans with %i clusters performance:"%n_cl)
+    print("Max accuracy obtained is {:.4f}".format(max_accuracy_KM), " using the combination number :", max_index_KM[0]+1)
+    assoc = list(zip(np.arange(n_cl), cl_ass[max_index_KM[0],:]))
     print('Combination %i has the "Cluster to Lables" association = ' %(max_index_KM[0]+1) + str(assoc) )
+    print("----------------------------------------------------------")
     
-    
+    assoc = np.array(assoc)
     KM_pred_train = KM_pred_train_cmb[:,max_index_KM]
     KM_pred_val = KM_pred_val_cmb[:,max_index_KM]
     
-    return KM_pred_train, KM_pred_val
+    return KM_pred_train, KM_pred_val, assoc
 
 
 def normalize_image_data(images):
     """ Takes an imported set of images and normalizes values to between
-    0 and 1 using min-max scaling across the whole image set.
+    0 and 255 using min-max scaling across the whole image set.
+    Arguments:
+        images : 2d image with amplitude
+    Returns:
+        images : min-max scaled images
     """
     img_max = np.amax(images)
     img_min = np.amin(images)
     #Debug 
-    print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
+    #print('While executing "normalize_image_data":')
+    #print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
     if img_max==0:
         print("Error: File given is made by black images (only zeros)")
     else: 
         if (img_max - img_min) > 0:
-            images = (images - img_min) / (img_max - img_min)
+            images = np.around( 255 * (images - img_min) / (img_max - img_min))
         else: 
-            images = (images - img_min) / img_max
+            images = 0
             print("Error: File given is made by same values images, now it has been normalized to 1")
             
     return images
 
 def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, contour=True):
     """Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb
+       Plots the decision boundary for a classifier on a 2d feature set.
+    Arguments:
+        clf : fitted classifier to be used (needs a predict method)
+        X : 2d feature set
+        y : labels corresponding to X
+        axes : axes limits for plotting
+        alpha : opacity of points
+        contour : whether to show decision boundary or not.
+    Returns:
+        none
     """
     from matplotlib.colors import ListedColormap
     x1s = np.linspace(axes[0], axes[1], 100)
@@ -457,8 +483,8 @@ def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, con
     if contour:
         custom_cmap2 = ListedColormap(['#7d7d58','#4c4c7f','#507d50'])
         plt.contour(x1, x2, y_pred, cmap=custom_cmap2, alpha=0.8)
-    plt.plot(X[:, 0][y==0], X[:, 1][y==0], "yo", alpha=alpha)
     plt.plot(X[:, 0][y==1], X[:, 1][y==1], "bs", alpha=alpha)
+    plt.plot(X[:, 0][y==0], X[:, 1][y==0], "yo", alpha=0.8)
     plt.axis(axes)
     plt.xlabel(r"$x_1$", fontsize=18)
     plt.ylabel(r"$x_2$", fontsize=18, rotation=0)
@@ -474,7 +500,7 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
         xSimple_train_TSNE : t-SNE features of training set
         labels_train : training labels
     Returns:
-        nothing
+        none
     """
     import matplotlib.pyplot as plt
     #First we fit the models
