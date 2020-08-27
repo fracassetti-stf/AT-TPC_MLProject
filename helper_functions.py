@@ -604,8 +604,155 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
     #ax[3][1].set_title("K-means (2 clusters) after t-SNE", fontsize=18)
     #ax[3][1].scatter(KM2_TSNE.cluster_centers_[:,0], KM2_TSNE.cluster_centers_[:,1], marker='x', s=50, linewidths=50,
      #       color='k', zorder=11, alpha=1)
+
+def make_2d_vis_autoencoder(xt,yt,Labels_train):
     
+    """This function creates the visualizations of different models
+    trained on the 2d PCA and TSNE reduced dataset.
+    Adapted from: https://github.com/ageron/handson-ml2
+    
+    Arguments:
+        xSimple_train_PCA : PCA features of training set
+        xSimple_train_TSNE : t-SNE features of training set
+        labels_train : training labels
+    Returns:
+        none
+    """
+    dataset = []
+
+    for x,y in zip(xt,yt):
+
+        dataset.append(np.array([x,y]))
+
+    dataset = np.array(dataset)
 
 
+    import matplotlib.pyplot as plt
+    #First we fit the models
+    from sklearn.linear_model import LogisticRegression
+   
+    logreg_autoencoder = LogisticRegression()
+    logreg_autoencoder.fit(dataset, Labels_train)
+    LR_pred_train_autoencoder = logreg_autoencoder.predict(dataset)
 
-      
+    from sklearn.ensemble import RandomForestClassifier
+
+    RFC_autoencoder = RandomForestClassifier()
+    RFC_autoencoder.fit(dataset, Labels_train)
+    RFC_pred_train_autoencoder = RFC_autoencoder.predict(dataset)
+
+    from sklearn.cluster import KMeans
+
+    KM2_autoencoder = KMeans(n_clusters=2)
+    KM2_autoencoder.fit(dataset)
+    KM2_pred_train_autoencoder = KM2_autoencoder.predict(dataset)
+
+    from sklearn import svm
+
+    SVM_autoencoder = svm.SVC()
+    SVM_autoencoder.fit(dataset, Labels_train)
+    SVM_pred_train_autoencoder = SVM_autoencoder.predict(dataset)
+
+
+    #Make a figure with subplots
+    fig, ax = plt.subplots(3, figsize=(18, 24))
+
+    plt.sca(ax[0])
+    plot_decision_boundary(logreg_autoencoder, dataset, Labels_train)
+    ax[0].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[0].text(-1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[0].set_title("Logistic regression after Autoencoder", fontsize=18)
+
+    plt.sca(ax[1])
+    plot_decision_boundary(RFC_autoencoder, dataset, Labels_train)
+    ax[1].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[1].text(1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[1].set_title("Random forest after Autoencoder", fontsize=18)
+
+    plt.sca(ax[2])
+    plot_decision_boundary(SVM_autoencoder, dataset, Labels_train)
+    ax[2].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[2].text(-0.5, 0.7, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[2].set_title("Support vector machine after Autoencoder", fontsize=18)
+
+        
+def plot_encoder_net(x,y):
+    
+    fig, ax = plt.subplots(figsize=(9, 6))
+    plt.title("Training Set Latent representation", fontsize=20)
+
+    plt.scatter(x, y, c = 'black')
+
+    plt.xlabel('X Latent Space', fontsize=18)
+    ax.set_xticks(np.arange(-1,1,0.2))
+    ax.set_xlim(-1,+1)
+
+    plt.ylabel('Y Latent Space', fontsize=18)
+    ax.set_yticks(np.arange(-1,1,0.2))
+    ax.set_ylim(-1,+1)
+
+    fig.tight_layout()
+    plt.show()
+    
+def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
+    
+    #Assign true label to (x,y) points in latent space
+    get_true_reaction = encoder_pred[Labels_train > 0.5]
+    get_true_beam = encoder_pred[Labels_train < 0.5]
+
+
+    # Ask for centroid positions in latent space
+    centroids = clusters.cluster_centers_
+
+    # Draw maps of KMeans predictions as Background class regions
+    points = np.random.uniform(-1,1,(10,2))
+
+    p_reac_x = []
+    p_reac_y = []
+    p_beam_x = []
+    p_beam_y = []
+
+    for x in np.arange(-1, 1, 0.01): 
+        for y in np.arange(-1, 1, 0.01):
+            p = np.array([x,y], dtype=np.float32).reshape(1,-1)
+            p_cluster = int(clusters.predict(p)) # determine which cluster p belongs to
+            p_label = assoc[p_cluster,1] # determine which label p must be assigned to
+
+            if(p_label > 0.5 ):
+                p_reac_x.append(p[0][0])
+                p_reac_y.append(p[0][1])
+            else:            
+                p_beam_x.append(p[0][0])
+                p_beam_y.append(p[0][1])
+
+    
+    fig, ax = plt.subplots(figsize=(12, 9))
+    plt.title(title, fontsize=20);
+
+    # Plotting dots : color is true label
+    plt.scatter(get_true_reaction[:,0], get_true_reaction[:,1], color='gray', label='Reaction', alpha=0.8)
+    plt.scatter(get_true_beam[:,0], get_true_beam[:,1], color='red', label='Beam', alpha=0.5)
+
+    # Plotting prediction area of k means
+    plt.scatter(p_reac_x, p_reac_y, color='gray', marker='s', s=5, alpha=0.25)
+    plt.scatter(p_beam_x, p_beam_y, color='red', marker='s', s=5, alpha=0.25)
+
+    # Plotting KMeans centroids
+    for idx,c in enumerate(centroids):
+         plt.scatter([centroids[idx][0]],[centroids[idx][1]], marker='*', s=500, c='black')
+
+
+    plt.xlabel('X Latent Space', fontsize=18)
+    ax.set_xticks(np.arange(-1,1,0.2))
+    ax.set_xlim(-1,+1)
+
+    plt.ylabel('Y Latent Space', fontsize=18)
+    ax.set_yticks(np.arange(-1,1,0.2))
+    ax.set_ylim(-1,+1)
+
+    plt.legend(fontsize=20);
+    #plt.xticks(fontsize=15)
+    #plt.yticks(fontsize=15)
+
+    fig.tight_layout()
+    plt.show()
