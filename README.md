@@ -18,6 +18,11 @@ This session describes what this project is meant to look like, and our final go
 
 ## 1) Recent updates on the work: (please indicate the date and your name) 
 
+### 2020_08_28 SF : Working on CNN, and updating helper_functions.py
+I worked on the CNN algorithms, I have created different functions in order to convert the data in images, manipulate images, and plotting. The results have improved.  
+
+I have updated the helper_functions.py, using the one of Andreas, and integrating mine(CNN), and the ones that Luca created (Autoencoder algorithm). The file is in my branch: SFprojectfile/helper_functions.py. I also divided the functions in sections, so that it is more organised. I still need to modify some function related to CNN.  
+
 ### 2020_08_25 at 16:00 CET : Meeting with the collaboators  
 We planned a skype meeting in order to discuss on the project, join all the material, and finilized the report.  
 
@@ -69,6 +74,6 @@ The report (computational project = jupyter notebook) would go through every ste
 possible it would be nice to add extra information, or brief description on the model used. It would be a nice way in order to review this concept, and to explain your colleagues what you did, if they are not very familiar with it.  
 
 AT_Report: This file will be the final report. In the end, it should be run independently, and be more accurate as possible in describing out work.
-AT_Project: This file is the "code" where we try things. In the end it should look very similar to the report, be with only really needed description or comments. In principle, this file should not be delivered, since every infomration should be already included and described in the Report.  
+AT_Project: This file is the "code" where we try things. In the end it should look very similar to the report, be with only really needed description or comments. In principle, this file should not be delivered, since every infomration should be already included and described in the Report.  EDIT: this file was never used (apart form the very beginning), since we directly tried new code in the report file. 
 
 The idea is that one perform taks in the Project file, he/she tests it, and only when it works just fine, he/she import the code in the report, where he/she adds extra information, and produce better outputs. 
