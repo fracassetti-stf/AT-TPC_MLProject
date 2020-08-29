@@ -18,6 +18,10 @@ This session describes what this project is meant to look like, and our final go
 
 ## 1) Recent updates on the work: (please indicate the date and your name) 
 
+### 2020_08_29 SF : CNN Finished, updated CNN helper_functions.py  
+CNN need some revision, but the algorithm is working.  
+Tomorrow I will finish revising CNN, and I will create the final report file: SFprojectfile/AT-TPC_Report.ipynb.  
+
 ### 2020_08_28 SF : Working on CNN, and updating helper_functions.py
 I worked on the CNN algorithms, I have created different functions in order to convert the data in images, manipulate images, and plotting. The results have improved.  
 
