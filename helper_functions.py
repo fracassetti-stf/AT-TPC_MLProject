@@ -1,14 +1,17 @@
+import math
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
-from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
-                             matthews_corrcoef)
 from mpl_toolkits.mplot3d import Axes3D
 
-import tensorflow as tf
+
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
+                             matthews_corrcoef)
+
 # This is simply an alias for convenience
 layers = tf.keras.layers
 
-import math
+
 
 
 
@@ -431,8 +434,20 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
 ###############     These function deals meanly with images manipulations          ###############
 ##################################################################################################
 
-def images_preprocessing(DataList):
+def prepare_data(DataList):
     
+    
+    x_values_List = []
+    y_values_List = []
+    
+    for i in range(len(DataList)): # loop on event number
+        for j in range(len(DataList[i])): # loop on event rows
+            x_values_List.append(DataList[i][j][0]) 
+            y_values_List.append(DataList[i][j][1])   
+            
+    xy_values = np.array((x_values_List,y_values_List))
+    
+
     points = []
 
     # Convert the data in points , which contain only x,y and pixel value.
@@ -443,43 +458,7 @@ def images_preprocessing(DataList):
             for ax in range(2):
                 points[i][j].append(DataList[i][j][ax]) # x,y values
 
-
-    # Generate arrays to perform math operations
-    x_values_List = []
-    y_values_List = []
-    
-    for i in range(len(DataList)): # loop on event number
-        for j in range(len(DataList[i])): # loop on event rows
-            x_values_List.append(DataList[i][j][0]) 
-            y_values_List.append(DataList[i][j][1])   
-            
-    x_values = np.array(x_values_List)
-    y_values = np.array(y_values_List)
-
-    x_max = np.amax(x_values)
-    x_min = np.amin(x_values)
-    
-    y_max = np.amax(y_values)
-    y_min = np.amin(y_values)
-    
-    print("PAD PLANE Dimensions: ")
-    print("-----------------------------------------------------")
-    print("Max x: ", round(x_max,2)  ," and Min x: ",  round(x_min,2) )
-    print("Max y: ", round(y_max,2)  ," and Min y: ",  round(y_min,2) )
-    print("")
-    
-    x_uniques = np.unique(np.around(x_values,3))
-    y_uniques = np.unique(np.around(y_values,3))
-    
-    print("Possible positive values of x: ")
-    print(x_uniques[x_uniques>0][0:10], " and so on...")
-    print("Possible positive values of y: ")
-    print(y_uniques[y_uniques>0][0:10], " and so on...")
-    print("")
-    x_diff = np.diff(x_uniques)
-    y_diff = np.diff(y_uniques)
-    
-    return points, x_max, y_max
+    return points
 
 
 
@@ -524,10 +503,10 @@ def show_grid(points, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
     y_values_List = []
 
     
-    for i in range(len(DataList)): # loop on event number
-        for j in range(len(DataList[i])): # loop on event rows
-            x_values_List.append(DataList[i][j][0]) 
-            y_values_List.append(DataList[i][j][1])   
+    for i in range(len(points)): # loop on event number
+        for j in range(len(points[i])): # loop on event rows
+            x_values_List.append(points[i][j][0]) 
+            y_values_List.append(points[i][j][1])   
 
     x_values = np.array(x_values_List)
     y_values = np.array(y_values_List)
@@ -630,13 +609,13 @@ def normalize_image_data(images):
 
 
 
-def plot_images(images, plot_row=3, idx=0):
+def plot_images(images, labels, plot_row=3, idx=0):
 
     fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
     for i in range(plot_row):
         for j in range(2): 
             my_pic=ax[i][j].imshow(images[idx],vmin=0, vmax=255, cmap='inferno')
-            if Labels[idx]>0.5:
+            if labels[idx]>0.5:
                 ax[i][j].set_title("Image "+ str(idx) + ": Reaction Event")
             else:
                 ax[i][j].set_title("Image "+ str(idx) + ": Beam Event")
