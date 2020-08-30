@@ -34,7 +34,7 @@ I have updated the helper_functions.py, using the one of Andreas, and integratin
 We planned a skype meeting in order to discuss on the project, join all the material, and finilized the report.  
 
 ### 2020_08_25 SF: Completed the AutoEncoder + KMeans (by Luca Morselli)  
-I have coped Luca file on autoencoder and modified in my branch. It is now working and finilised. I have used some functions in helper_functions, in order to reduce the code. I have also used different number of cluster with kmeans ans choose the best model (using "best_km_custer" function).  
+I have copied Luca file on autoencoder and modified in my branch. It is now working and finilised. I have used some functions in helper_functions, in order to reduce the code. I have also used different number of cluster with kmeans ans choose the best model (using "best_km_custer" function).  
 
 ### 2020_08_24 AC: Updated report + helper functions.
 I have added a new report version adding some sections from my projectfile to my branch. Minor edit helper function.
@@ -80,7 +80,6 @@ Out goal is to deliver a report in which we perform the desired task, as indicat
 The report (computational project = jupyter notebook) would go through every step of out analysis and describe what we did and how,  
 possible it would be nice to add extra information, or brief description on the model used. It would be a nice way in order to review this concept, and to explain your colleagues what you did, if they are not very familiar with it.  
 
-AT_Report: This file will be the final report. In the end, it should be run independently, and be more accurate as possible in describing out work.
-AT_Project: This file is the "code" where we try things. In the end it should look very similar to the report, be with only really needed description or comments. In principle, this file should not be delivered, since every infomration should be already included and described in the Report.  EDIT: this file was never used (apart form the very beginning), since we directly tried new code in the report file. 
+AT-TPC_Report: This file will be the final report. In the end, it should be run independently, and be more accurate as possible in describing our work.
 
 The idea is that one perform taks in the Project file, he/she tests it, and only when it works just fine, he/she import the code in the report, where he/she adds extra information, and produce better outputs. 
