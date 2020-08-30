@@ -76,9 +76,8 @@ def load_data(hf):
     return DataList, Labels
 
 
-
-def plot_3d_event(dataset,
-                  labels,
+def plot_3d_event(DataList,
+                  Labels,
                   idx):
     
     """This function plots a single event in a 3d plot
@@ -92,30 +91,101 @@ def plot_3d_event(dataset,
     Returns:
         None
     """
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111, projection='3d')
-
-    xvalues = np.zeros(len(dataset[idx]))
-    yvalues = np.zeros(len(dataset[idx]))
-    zvalues = np.zeros(len(dataset[idx]))
+    fig = plt.figure(figsize=(4,4))
+    ax = fig.add_subplot(111, projection='3d') 
     
-    for i in range(len(dataset[idx])):
-        xvalues[i] = dataset[idx][i][0]
-        yvalues[i] = dataset[idx][i][1]
-        zvalues[i] = dataset[idx][i][2]
-    
-    
-    ax.scatter(xvalues, yvalues, zvalues, marker='o')
-    if (labels[idx]==0):
-        ax.set_title('Beam Event #' + str(idx), pad = 15, fontsize = 14)
+    if (Labels[idx]==0):
+        ax.set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
     else:
-        ax.set_title('Reaction Event #' + str(idx), pad = 15, fontsize = 14)
-    
-    ax.set_xlabel('X[mm]')
-    ax.set_ylabel('Y[mm]')
-    ax.set_zlabel('Z[mm]')
+        ax.set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+       
+    ax.scatter(DataList[idx]['x'], DataList[idx]['y'], DataList[idx]['z'], marker='o')
+    ax.set_xticks(np.arange(-200, +201, 100))
+    ax.set_yticks(np.arange(-200, +201, 100))
+    ax.set_zticks(np.arange(0, +1501, 500))
+        
+    ax.set_xlim(-270,+270)
+    ax.set_ylim(-270,+270)
+    ax.set_zlim(0,+1500)
+        
+    ax.set_xlabel('X [mm]')
+    ax.set_ylabel('Y [mm]')
+    ax.set_zlabel('Z [mm]')
+
+    fig.tight_layout()
     plt.show()
 
+def plot_3d_events(DataList,
+                  Labels,
+                  idx = 0):
+    
+    """This function plots a single event in a 3d plot
+    with x,y,z for each pad fired
+    
+    Arguments:
+        DataList = DataList (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
+    """
+    fig = plt.figure(figsize=(16,12))
+    idx=0
+    
+    for i in range(3):
+        for j in range(4): 
+            ax = fig.add_subplot(3,4,idx+1, projection='3d')
+            if (Labels[idx]==0):
+                ax.set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+            else:
+                ax.set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+       
+            ax.scatter(DataList[idx]['x'], DataList[idx]['y'], DataList[idx]['z'], marker='o')
+            ax.set_xticks(np.arange(-200, +201, 100))
+            ax.set_yticks(np.arange(-200, +201, 100))
+            ax.set_zticks(np.arange(0, +1501, 500))
+        
+            ax.set_xlim(-270,+270)
+            ax.set_ylim(-270,+270)
+            ax.set_zlim(0,+1500)
+        
+            ax.set_xlabel('X [mm]')
+            ax.set_ylabel('Y [mm]')
+            ax.set_zlabel('Z [mm]')
+        
+            idx = idx + 1
+    
+    fig.tight_layout()
+    plt.show()
+
+    
+def plot_2d_events(DataList, Labels , idx = 0):
+    
+    fig,ax = plt.subplots(3,4,figsize=(16,12))
+    idx=0
+    for i in range(3):
+        for j in range(4): 
+            
+            if (Labels[idx]==0):
+                ax[i][j].set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+            else:
+                ax[i][j].set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+        
+            ax[i][j].scatter(DataList[idx]['x'],DataList[idx]['y'],c=np.log(DataList[idx]['A']),cmap='gray')
+            ax[i][j].set_xticks(np.arange(-200, +201, 100))
+            ax[i][j].set_yticks(np.arange(-250, +251, 50))
+            ax[i][j].set_xlim(-270,+270)
+            ax[i][j].set_ylim(-270,+270) 
+            idx = idx+1
+
+    fig.text(0.5,0, 'X [mm]', ha='center')
+    fig.text(0,0.5, 'Y [mm]', ha='center',rotation='vertical')
+
+    fig.tight_layout()
+    plt.show()   
+    
+    
 
 def calc_features(DataList):
     
