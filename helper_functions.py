@@ -1234,9 +1234,9 @@ def plot_encoder_net(x,y, labels):
     
     fig, ax = plt.subplots(figsize=(9, 6))
     plt.title("Training Set Latent representation", fontsize=20)
-
-    plt.scatter(x0, y0, c = 'red', label='beam')
+    
     plt.scatter(x1, y1, c = 'blue', label='reaction')
+    plt.scatter(x0, y0, c = 'red', label='beam')
     
     
 
