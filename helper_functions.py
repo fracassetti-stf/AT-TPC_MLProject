@@ -1316,3 +1316,28 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
 
     fig.tight_layout()
     plt.show()
+    
+def get_predictor(classifier_type, xtrain, labels):
+    
+    if classifier_type == 'LR':
+        
+        from sklearn.linear_model import LogisticRegression
+        
+        logreg = LogisticRegression()
+        logreg.fit(xtrain, labels)
+        return logreg
+    
+            
+    elif classifier_type == 'RF':
+        
+        from sklearn.ensemble import RandomForestClassifier
+        RFC_pred = RandomForestClassifier()
+        RFC_pred.fit(xtrain, labels)
+        return RFC_pred
+    
+    elif classifier_type == 'SVM':
+        
+        from sklearn import svm
+        SVM_pred = svm.SVC()
+        SVM_pred.fit(xtrain, labels)
+        return SVM_pred
