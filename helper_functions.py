@@ -2,6 +2,7 @@ import math
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -263,6 +264,164 @@ def calc_features(DataList):
     MeanWeightedXPerEvent, MeanWeightedYPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent,FracClosePtsPerEvent)
 
 
+def train_split(train_idx, Labels):
+    # Splitting train_ind into beam and reaction indexes
+    train_r_idx = [] # List of indexes of "Reaction" training event
+    train_b_idx = [] # List of indexes of "Beam" training event
+    for i in train_idx:
+        if Labels[i]>0.5:
+            train_r_idx.append(i) # Indexes of "Reaction" training data
+        else:
+            train_b_idx.append(i) # Indexes of "Beam" training data  
+    # Converting into numpy array for later use
+    train_r_idx = np.array(train_r_idx) 
+    train_b_idx = np.array(train_b_idx)
+
+   
+    return train_r_idx, train_b_idx
+
+def plot_features_hist(train_r_idx, r_color, train_b_idx, b_color, PadsPerEvent, SumAPerEvent, FracClosePtsPerEvent):
+    
+    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+
+    #mannualy set number of bins for both two histgrams and make the bin widths equal to each other
+
+    bins1=np.histogram(np.hstack((PadsPerEvent[train_r_idx],PadsPerEvent[train_b_idx])), bins=10)[1]
+    bins2=np.histogram(np.hstack((SumAPerEvent[train_r_idx],SumAPerEvent[train_b_idx])), bins=10)[1]
+    bins3=np.histogram(np.hstack((FracClosePtsPerEvent[train_r_idx],FracClosePtsPerEvent[train_b_idx])), bins=10)[1]
+
+    ax[0].hist(PadsPerEvent[train_r_idx],bins=bins1, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[0].hist(PadsPerEvent[train_b_idx],bins=bins1, color = b_color, label = 'Beam', histtype = 'step')
+    ax[0].set_title("Active Pads Histogram")
+    ax[0].set_xlabel("Number of Pads")
+    ax[0].set_ylabel("Counts")
+    ax[0].legend()
+
+    ax[1].hist(SumAPerEvent[train_r_idx],bins=bins2, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[1].hist(SumAPerEvent[train_b_idx],bins=bins2, color = b_color, label = 'Beam', histtype = 'step')
+    ax[1].set_title("Charge Deposition Histogram")
+    ax[1].set_xlabel("Total Charge")
+    ax[1].set_ylabel("Counts")
+    ax[1].legend()
+
+    ax[2].hist(FracClosePtsPerEvent[train_r_idx],bins=bins3, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[2].hist(FracClosePtsPerEvent[train_b_idx],bins=bins3,color = b_color, label = 'Beam', histtype = 'step')
+    ax[2].set_title("Fraction of Close Pads Histogram")
+    ax[2].set_xlabel("Fraction of Close Pads")
+    ax[2].set_ylabel("Counts")
+    ax[2].legend(loc='upper left')
+
+    fig.tight_layout() # adjust automatically spacing between sublots
+    plt.show()
+   
+
+
+    
+def plot_features_scatter(train_r_idx, r_color, train_b_idx, b_color, MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent):
+
+    #Define legend for 2d (scatter)plots
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
+                        Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
+    fig, ax = plt.subplots(2, 3, figsize=(18, 10))
+    # Mean values
+    ax[0][0].scatter(MeanXPerEvent[train_r_idx],MeanYPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0][0].scatter(MeanXPerEvent[train_b_idx],MeanYPerEvent[train_b_idx], c = b_color)
+    ax[0][0].set_title("Mean X vs Mean Y")
+    ax[0][0].set_xlabel(" Mean X")
+    ax[0][0].set_ylabel("Mean Y")
+    ax[0][0].legend(handles=legend_elements)
+
+    ax[0][1].scatter(MeanXPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color,  alpha=0.8)
+    ax[0][1].scatter(MeanXPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
+    ax[0][1].set_title("Mean X vs Mean Z")
+    ax[0][1].set_xlabel("Mean X")
+    ax[0][1].set_ylabel("Mean Z")
+    ax[0][1].legend(handles=legend_elements)
+
+    ax[0][2].scatter(MeanYPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0][2].scatter(MeanYPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
+    ax[0][2].set_title("Mean Y vs Mean Z")
+    ax[0][2].set_xlabel("Mean Y")
+    ax[0][2].set_ylabel("Mean Z")
+    ax[0][2].legend(handles=legend_elements)
+
+    # Standard Deviations
+    ax[1][0].scatter(StDevXPerEvent[train_r_idx],StDevYPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][0].scatter(StDevXPerEvent[train_b_idx],StDevYPerEvent[train_b_idx], c = b_color)
+    ax[1][0].set_title("stdev(X) vs stdev(Y)")
+    ax[1][0].set_xlabel("stdev(X)")
+    ax[1][0].set_ylabel("stdev(Y)")
+    ax[1][0].legend(handles=legend_elements)
+
+    ax[1][1].scatter(StDevXPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][1].scatter(StDevXPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
+    ax[1][1].set_title("stdev(X) vs stdev(Z)")
+    ax[1][1].set_xlabel("stdev(X)")
+    ax[1][1].set_ylabel("stdev(Z)")
+    ax[1][1].legend(handles=legend_elements)
+
+    ax[1][2].scatter(StDevYPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][2].scatter(StDevYPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
+    ax[1][2].set_title("stdev(Y) vs stdev(Z)")
+    ax[1][2].set_xlabel("stdev(Y)")
+    ax[1][2].set_ylabel("stdev(Z)")
+    ax[1][2].legend(handles=legend_elements)
+
+    fig.tight_layout()
+    plt.show()
+
+def plot_features_scatter2(train_r_idx, r_color, train_b_idx, b_color, StDevZPerEvent, FracClosePtsPerEvent, PadsPerEvent, SumAPerEvent):
+
+    #Define legend for 2d (scatter)plots
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
+                        Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
+    
+    fig, ax = plt.subplots(1,2, figsize=(12, 5))
+
+    ax[0].scatter(StDevZPerEvent[train_r_idx],FracClosePtsPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0].scatter(StDevZPerEvent[train_b_idx],FracClosePtsPerEvent[train_b_idx], c = b_color)
+    ax[0].set_title("stdev(Z) vs Fraction of Close Pads")
+    ax[0].set_xlabel("stdev(Z)")
+    ax[0].set_ylabel("Fraction of Close Pads")
+    ax[0].legend(handles=legend_elements)
+
+    ax[1].scatter(PadsPerEvent[train_r_idx],SumAPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1].scatter(PadsPerEvent[train_b_idx],SumAPerEvent[train_b_idx], c = b_color)
+    ax[1].set_title("Number of Pads vs Total Charge")
+    ax[1].set_xlabel("Number of Pads")
+    ax[1].set_ylabel("Total Charge")
+    ax[1].legend(handles=legend_elements)
+
+    fig.tight_layout()
+    plt.show()
+    
+    
+    
+def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax, PadsPerEvent, PadsMax,  FracClosePtsPerEvent, FCPMin):
+    
+    large_x_stdev = train_b_idx[StDevXPerEvent[train_b_idx] > StDevXMax] 
+    large_pads = train_b_idx[PadsPerEvent[train_b_idx] > PadsMax]  
+    small_frac_close = train_b_idx[FracClosePtsPerEvent[train_b_idx] < FCPMin] 
+    
+    print("Outliers using current criteria:")
+    print("stdev(X) > ", StDevXMax, " cm      :", np.sort(large_x_stdev))
+    print("Number of Pads > ", PadsMax, " :", np.sort(large_pads))
+    print("FCP < ", FCPMin, "            :", np.sort(small_frac_close))
+
+    # Outliers that responde to (at least) one criterion 
+    outliers = np.union1d(np.union1d(large_x_stdev, large_pads),small_frac_close)
+    print("Outliers that satisfy at least one criterion:", outliers)
+    print("\n")
+
+    # Plotting Outliers
+    for i in range(len(outliers)):
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>> Outliers: ", outliers[i], "<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print("stdev(X)       : ", round(StDevXPerEvent[outliers[i]],3))
+        print("Number of Pads : ", int(PadsPerEvent[outliers[i]]))
+        print("FCP            :  {:.2f}".format(FracClosePtsPerEvent[outliers[i]]*100) + "%")
+        plot_3d_event(DataList, Labels, outliers[i])
+       
+    
 ###########################################################################################################################
 ###############     Model Performances Section                                                              ###############     
 ###############     Functions dedicated at the visualization/claculations of the model parformances         ###############
@@ -824,7 +983,16 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 ###############     Function used in the section: Dimensionality Reduction Algorithms     ###############
 #########################################################################################################
 
-
+def plot_latent_space(X_train, Labels_train, DRA):
+    plt.figure(figsize=(9,6))
+    plt.scatter(X_train[Labels_train>0.5, 0], X_train[Labels_train>0.5, 1], c="blue", label='Reaction')
+    plt.scatter(X_train[Labels_train<0.5, 0], X_train[Labels_train<0.5, 1], c="red", label='Beam')
+    plt.title("Training set after " + DRA, fontsize=18)
+    plt.xlabel("$x_1$", fontsize=14)
+    plt.ylabel("$x_2$", fontsize=14, rotation=0)
+    plt.legend()
+    plt.show()
+    
     
 def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, contour=True):
     """Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb
@@ -1024,7 +1192,7 @@ def make_2d_vis_autoencoder(xt,yt,Labels_train):
 
 
     #Make a figure with subplots
-    fig, ax = plt.subplots(3, figsize=(18, 24))
+    fig, ax = plt.subplots(3, figsize=(9, 18))
 
     plt.sca(ax[0])
     plot_decision_boundary(logreg_autoencoder, dataset, Labels_train)
@@ -1095,7 +1263,7 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
                 p_beam_y.append(p[0][1])
 
     
-    fig, ax = plt.subplots(figsize=(12, 9))
+    fig, ax = plt.subplots(figsize=(9, 6))
     plt.title(title, fontsize=20);
 
     # Plotting dots : color is true label
@@ -1112,11 +1280,11 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
 
 
     plt.xlabel('X Latent Space', fontsize=18)
-    ax.set_xticks(np.arange(-1,1,0.2))
+    ax.set_xticks(np.arange(-1,1.1,0.2))
     ax.set_xlim(-1,+1)
 
     plt.ylabel('Y Latent Space', fontsize=18)
-    ax.set_yticks(np.arange(-1,1,0.2))
+    ax.set_yticks(np.arange(-1,1.1,0.2))
     ax.set_ylim(-1,+1)
 
     plt.legend(fontsize=20);
