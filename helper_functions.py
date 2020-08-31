@@ -1,191 +1,27 @@
+import math
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from mpl_toolkits.mplot3d import Axes3D
+
+
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
                              matthews_corrcoef)
-from mpl_toolkits.mplot3d import Axes3D
-import math
 
-import tensorflow as tf
 # This is simply an alias for convenience
 layers = tf.keras.layers
 
-def plot_confusion_matrix(y_true,
-                          y_pred,
-                          classes,
-                          title=None,
-                          cmap=plt.cm.Blues):
-    
-    """This function prints and plots the confusion matrix.
-    
-    Adapted from:
-    https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
-    
-    Arguments:
-        y_true: Real class labels.
-        y_pred: Predicted class labels.
-        classes: List of class names.
-        title: Title for the plot.
-        cmap: Colormap to be used.
-    
-    Returns:
-        None.
-    """
-    if not title:
-        title = 'Confusion matrix'
 
-    # Compute confusion matrix
-    cm = confusion_matrix(y_true, y_pred)
 
-    fig, ax = plt.subplots(figsize=(4, 4), dpi=80)
-    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
-    ax.figure.colorbar(im, ax=ax)
-    # We want to show all ticks...
-    ax.set(xticks=np.arange(cm.shape[1]),
-           yticks=np.arange(cm.shape[0]),
-           # ... and label them with the respective list entries
-           xticklabels=classes, yticklabels=classes,
-           title=title,
-           ylabel='True label',
-           xlabel='Predicted label')
 
-    # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
 
-    # Loop over data dimensions and create text annotations.
-    thresh = cm.max() / 2.
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, format(cm[i, j], 'd'),
-                    ha='center', va='center',
-                    color='white' if cm[i, j] > thresh else 'black')
-    fig.tight_layout()
-    plt.show()
-    
-def plot_3d_event(dataset,
-                  labels,
-                  idx):
-    
-    """This function plots a single event in a 3d plot
-    with x,y,z for each pad fired
-    
-    Arguments:
-        dataset = DataList (unless you create different list)
-        labels = Labels (used for setting beam or reaction in title)
-        idx = index of event in dataset
-    
-    Returns:
-        None
-    """
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111, projection='3d')
+###########################################################################################################################
+###############     Data Import Section                                                                     ###############     
+###############     Functions dedicated at the first part of the report (i.e. before any ML algorithms):    ###############
+###############     data import, data pre-processing, and data-visualization.                               ###############
+###########################################################################################################################
 
-    xvalues = np.zeros(len(dataset[idx]))
-    yvalues = np.zeros(len(dataset[idx]))
-    zvalues = np.zeros(len(dataset[idx]))
-    
-    for i in range(len(dataset[idx])):
-        xvalues[i] = dataset[idx][i][0]
-        yvalues[i] = dataset[idx][i][1]
-        zvalues[i] = dataset[idx][i][2]
-    
-    
-    ax.scatter(xvalues, yvalues, zvalues, marker='o')
-    if (labels[idx]==0):
-        ax.set_title('Beam Event #' + str(idx), pad = 15, fontsize = 14)
-    else:
-        ax.set_title('Reaction Event #' + str(idx), pad = 15, fontsize = 14)
-    
-    ax.set_xlabel('X[mm]')
-    ax.set_ylabel('Y[mm]')
-    ax.set_zlabel('Z[mm]')
-    plt.show()
-    
-def print_model_performance(labels, 
-                            predictions,
-                            title = "INPUT SET TYPE"):
-    
-    """This function prints performance statistics of a model: confusion matrix, precision,
-    f1-score and mathews correlation coefficient.
-    
-    Arguments:
-        dataset = DataList (unless you create different list)
-        labels = Labels (used for setting beam or reaction in title)
-        idx = index of event in dataset
-    
-    Returns:
-        None
-    """
-    
-    accuracy = accuracy_score(labels, predictions)
-    precision = precision_score(labels, predictions)
-    recall = recall_score(labels, predictions)
-    confmat = confusion_matrix(labels, predictions)
-    f1 = f1_score(labels, predictions)
-    mcc = matthews_corrcoef(labels, predictions)
-    
-    print("Model performance for %s set:" %title)
-    print("--------------------------------------------------------")
-    print("Accuracy  : {:.2f}".format(accuracy*100) + "%")
-    print("Precision : {:.2f}".format(precision*100) + "%")
-    print("Recall    : {:.2f}".format(recall*100) + "%")
-    print("F1-score  : {:.4f}".format(f1))
-    print("MCC       : {:.4f}".format(mcc))
-    plot_confusion_matrix(labels, predictions, ["beam","reaction"])
-    print()
-    
-def make_nn_plots(history, min_acc = 0.95):
-    
-    """This function prints performance of a neural network per epoch (model loss & accuracy)
-    
-    Arguments:
-        history: history object obtained when fitting a tensorflow neural network
-        min_acc: set min axis value for accuracy. By default the plot has y_min=0.95
-    Returns:
-        None
-    """
-    
-    
-    
-    fig, ax = plt.subplots(1, 2, figsize=(14, 6))
-    
-    num_epochs = len(history.history['loss'])
-    
-    # avoid plotting every epochs ticks (e.g. in autoencoders num_epochs is definitely too  high)
-    max_x_ticks = 10 
-    if num_epochs > max_x_ticks: 
-        x_step = math.floor(num_epochs / max_x_ticks)
-    else:
-        x_step = 1
-    # Loss **********************
-    ax[0].set_title("Model Loss")
-    # X-axis
-    ax[0].set_xlabel("Epoch")
-    ax[0].set_xlim(1,num_epochs)
-    ax[0].set_xticks(range(1,num_epochs+1,x_step))
-    # Y-axis
-    ax[0].set_ylabel("Loss")
-
-    # Plotting
-    ax[0].plot(range(1,num_epochs+1),history.history['loss'], label='Training')
-    ax[0].plot(range(1,num_epochs+1),history.history['val_loss'], label='Validation')  
-    ax[0].legend()
-
-    # Accuracy **********************
-    ax[1].set_title("Model Accuracy")
-    # X-axis
-    ax[1].set_xlabel("Epoch")
-    ax[1].set_xlim(1,num_epochs)
-    ax[1].set_xticks(range(1,num_epochs+1,x_step))
-    # Y-axis
-    ax[1].set_ylabel("Accuracy")
-    ax[1].set_ylim(min_acc,1)
-    # Plotting
-    ax[1].plot(range(1,num_epochs+1),history.history['accuracy'], label='Training')
-    ax[1].plot(range(1,num_epochs+1),history.history['val_accuracy'], label='Validation')
-    ax[1].legend()
-    
-    
-    
 def load_data(hf):
     
     """This function loads the dataset and removes empty events
@@ -241,7 +77,116 @@ def load_data(hf):
     return DataList, Labels
 
 
+def plot_3d_event(DataList,
+                  Labels,
+                  idx):
+    
+    """This function plots a single event in a 3d plot
+    with x,y,z for each pad fired
+    
+    Arguments:
+        dataset = DataList (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
+    """
+    fig = plt.figure(figsize=(4,4))
+    ax = fig.add_subplot(111, projection='3d') 
+    
+    if (Labels[idx]==0):
+        ax.set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+    else:
+        ax.set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+       
+    ax.scatter(DataList[idx]['x'], DataList[idx]['y'], DataList[idx]['z'], marker='o')
+    ax.set_xticks(np.arange(-200, +201, 100))
+    ax.set_yticks(np.arange(-200, +201, 100))
+    ax.set_zticks(np.arange(0, +1501, 500))
+        
+    ax.set_xlim(-270,+270)
+    ax.set_ylim(-270,+270)
+    ax.set_zlim(0,+1500)
+        
+    ax.set_xlabel('X [mm]')
+    ax.set_ylabel('Y [mm]')
+    ax.set_zlabel('Z [mm]')
 
+    fig.tight_layout()
+    plt.show()
+
+def plot_3d_events(DataList,
+                  Labels,
+                  idx = 0):
+    
+    """This function plots a single event in a 3d plot
+    with x,y,z for each pad fired
+    
+    Arguments:
+        DataList = DataList (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
+    """
+    fig = plt.figure(figsize=(16,12))
+    idx=0
+    
+    for i in range(3):
+        for j in range(4): 
+            ax = fig.add_subplot(3,4,idx+1, projection='3d')
+            if (Labels[idx]==0):
+                ax.set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+            else:
+                ax.set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+       
+            ax.scatter(DataList[idx]['x'], DataList[idx]['y'], DataList[idx]['z'], marker='o')
+            ax.set_xticks(np.arange(-200, +201, 100))
+            ax.set_yticks(np.arange(-200, +201, 100))
+            ax.set_zticks(np.arange(0, +1501, 500))
+        
+            ax.set_xlim(-270,+270)
+            ax.set_ylim(-270,+270)
+            ax.set_zlim(0,+1500)
+        
+            ax.set_xlabel('X [mm]')
+            ax.set_ylabel('Y [mm]')
+            ax.set_zlabel('Z [mm]')
+        
+            idx = idx + 1
+    
+    fig.tight_layout()
+    plt.show()
+
+    
+def plot_2d_events(DataList, Labels , idx = 0):
+    
+    fig,ax = plt.subplots(3,4,figsize=(16,12))
+    idx=0
+    for i in range(3):
+        for j in range(4): 
+            
+            if (Labels[idx]==0):
+                ax[i][j].set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+            else:
+                ax[i][j].set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+        
+            ax[i][j].scatter(DataList[idx]['x'],DataList[idx]['y'],c=np.log(DataList[idx]['A']),cmap='gray')
+            ax[i][j].set_xticks(np.arange(-200, +201, 100))
+            ax[i][j].set_yticks(np.arange(-250, +251, 50))
+            ax[i][j].set_xlim(-270,+270)
+            ax[i][j].set_ylim(-270,+270) 
+            idx = idx+1
+
+    fig.text(0.5,0, 'X [mm]', ha='center')
+    fig.text(0,0.5, 'Y [mm]', ha='center',rotation='vertical')
+
+    fig.tight_layout()
+    plt.show()   
+    
+    
 
 def calc_features(DataList):
     
@@ -319,40 +264,318 @@ def calc_features(DataList):
     MeanWeightedXPerEvent, MeanWeightedYPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent,FracClosePtsPerEvent)
 
 
-def build_pretrained_vgg_model(input_shape, num_classes):
-    """Constructs a CNN with a VGG16's convolutional base and two fully-connected hidden layers on top.
-    The convolutional base is frozen (the weights can't be updated) and has weights from training on the ImageNet dataset.
+def train_split(train_idx, Labels):
+    # Splitting train_ind into beam and reaction indexes
+    train_r_idx = [] # List of indexes of "Reaction" training event
+    train_b_idx = [] # List of indexes of "Beam" training event
+    for i in train_idx:
+        if Labels[i]>0.5:
+            train_r_idx.append(i) # Indexes of "Reaction" training data
+        else:
+            train_b_idx.append(i) # Indexes of "Beam" training data  
+    # Converting into numpy array for later use
+    train_r_idx = np.array(train_r_idx) 
+    train_b_idx = np.array(train_b_idx)
 
+   
+    return train_r_idx, train_b_idx
+
+def plot_features_hist(train_r_idx, r_color, train_b_idx, b_color, PadsPerEvent, SumAPerEvent, FracClosePtsPerEvent):
+    
+    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+
+    #mannualy set number of bins for both two histgrams and make the bin widths equal to each other
+
+    bins1=np.histogram(np.hstack((PadsPerEvent[train_r_idx],PadsPerEvent[train_b_idx])), bins=10)[1]
+    bins2=np.histogram(np.hstack((SumAPerEvent[train_r_idx],SumAPerEvent[train_b_idx])), bins=10)[1]
+    bins3=np.histogram(np.hstack((FracClosePtsPerEvent[train_r_idx],FracClosePtsPerEvent[train_b_idx])), bins=10)[1]
+
+    ax[0].hist(PadsPerEvent[train_r_idx],bins=bins1, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[0].hist(PadsPerEvent[train_b_idx],bins=bins1, color = b_color, label = 'Beam', histtype = 'step')
+    ax[0].set_title("Active Pads Histogram")
+    ax[0].set_xlabel("Number of Pads")
+    ax[0].set_ylabel("Counts")
+    ax[0].legend()
+
+    ax[1].hist(SumAPerEvent[train_r_idx],bins=bins2, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[1].hist(SumAPerEvent[train_b_idx],bins=bins2, color = b_color, label = 'Beam', histtype = 'step')
+    ax[1].set_title("Charge Deposition Histogram")
+    ax[1].set_xlabel("Total Charge")
+    ax[1].set_ylabel("Counts")
+    ax[1].legend()
+
+    ax[2].hist(FracClosePtsPerEvent[train_r_idx],bins=bins3, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[2].hist(FracClosePtsPerEvent[train_b_idx],bins=bins3,color = b_color, label = 'Beam', histtype = 'step')
+    ax[2].set_title("Fraction of Close Pads Histogram")
+    ax[2].set_xlabel("Fraction of Close Pads")
+    ax[2].set_ylabel("Counts")
+    ax[2].legend(loc='upper left')
+
+    fig.tight_layout() # adjust automatically spacing between sublots
+    plt.show()
+   
+
+
+    
+def plot_features_scatter(train_r_idx, r_color, train_b_idx, b_color, MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent):
+
+    #Define legend for 2d (scatter)plots
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
+                        Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
+    fig, ax = plt.subplots(2, 3, figsize=(18, 10))
+    # Mean values
+    ax[0][0].scatter(MeanXPerEvent[train_r_idx],MeanYPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0][0].scatter(MeanXPerEvent[train_b_idx],MeanYPerEvent[train_b_idx], c = b_color)
+    ax[0][0].set_title("Mean X vs Mean Y")
+    ax[0][0].set_xlabel(" Mean X")
+    ax[0][0].set_ylabel("Mean Y")
+    ax[0][0].legend(handles=legend_elements)
+
+    ax[0][1].scatter(MeanXPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color,  alpha=0.8)
+    ax[0][1].scatter(MeanXPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
+    ax[0][1].set_title("Mean X vs Mean Z")
+    ax[0][1].set_xlabel("Mean X")
+    ax[0][1].set_ylabel("Mean Z")
+    ax[0][1].legend(handles=legend_elements)
+
+    ax[0][2].scatter(MeanYPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0][2].scatter(MeanYPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
+    ax[0][2].set_title("Mean Y vs Mean Z")
+    ax[0][2].set_xlabel("Mean Y")
+    ax[0][2].set_ylabel("Mean Z")
+    ax[0][2].legend(handles=legend_elements)
+
+    # Standard Deviations
+    ax[1][0].scatter(StDevXPerEvent[train_r_idx],StDevYPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][0].scatter(StDevXPerEvent[train_b_idx],StDevYPerEvent[train_b_idx], c = b_color)
+    ax[1][0].set_title("stdev(X) vs stdev(Y)")
+    ax[1][0].set_xlabel("stdev(X)")
+    ax[1][0].set_ylabel("stdev(Y)")
+    ax[1][0].legend(handles=legend_elements)
+
+    ax[1][1].scatter(StDevXPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][1].scatter(StDevXPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
+    ax[1][1].set_title("stdev(X) vs stdev(Z)")
+    ax[1][1].set_xlabel("stdev(X)")
+    ax[1][1].set_ylabel("stdev(Z)")
+    ax[1][1].legend(handles=legend_elements)
+
+    ax[1][2].scatter(StDevYPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][2].scatter(StDevYPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
+    ax[1][2].set_title("stdev(Y) vs stdev(Z)")
+    ax[1][2].set_xlabel("stdev(Y)")
+    ax[1][2].set_ylabel("stdev(Z)")
+    ax[1][2].legend(handles=legend_elements)
+
+    fig.tight_layout()
+    plt.show()
+
+def plot_features_scatter2(train_r_idx, r_color, train_b_idx, b_color, StDevZPerEvent, FracClosePtsPerEvent, PadsPerEvent, SumAPerEvent):
+
+    #Define legend for 2d (scatter)plots
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
+                        Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
+    
+    fig, ax = plt.subplots(1,2, figsize=(12, 5))
+
+    ax[0].scatter(StDevZPerEvent[train_r_idx],FracClosePtsPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0].scatter(StDevZPerEvent[train_b_idx],FracClosePtsPerEvent[train_b_idx], c = b_color)
+    ax[0].set_title("stdev(Z) vs Fraction of Close Pads")
+    ax[0].set_xlabel("stdev(Z)")
+    ax[0].set_ylabel("Fraction of Close Pads")
+    ax[0].legend(handles=legend_elements)
+
+    ax[1].scatter(PadsPerEvent[train_r_idx],SumAPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1].scatter(PadsPerEvent[train_b_idx],SumAPerEvent[train_b_idx], c = b_color)
+    ax[1].set_title("Number of Pads vs Total Charge")
+    ax[1].set_xlabel("Number of Pads")
+    ax[1].set_ylabel("Total Charge")
+    ax[1].legend(handles=legend_elements)
+
+    fig.tight_layout()
+    plt.show()
+    
+    
+    
+def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax, PadsPerEvent, PadsMax,  FracClosePtsPerEvent, FCPMin):
+    
+    large_x_stdev = train_b_idx[StDevXPerEvent[train_b_idx] > StDevXMax] 
+    large_pads = train_b_idx[PadsPerEvent[train_b_idx] > PadsMax]  
+    small_frac_close = train_b_idx[FracClosePtsPerEvent[train_b_idx] < FCPMin] 
+    
+    print("Outliers using current criteria:")
+    print("stdev(X) > ", StDevXMax, " cm      :", np.sort(large_x_stdev))
+    print("Number of Pads > ", PadsMax, " :", np.sort(large_pads))
+    print("FCP < ", FCPMin, "            :", np.sort(small_frac_close))
+
+    # Outliers that responde to (at least) one criterion 
+    outliers = np.union1d(np.union1d(large_x_stdev, large_pads),small_frac_close)
+    print("Outliers that satisfy at least one criterion:", outliers)
+    print("\n")
+
+    # Plotting Outliers
+    for i in range(len(outliers)):
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>> Outliers: ", outliers[i], "<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print("stdev(X)       : ", round(StDevXPerEvent[outliers[i]],3))
+        print("Number of Pads : ", int(PadsPerEvent[outliers[i]]))
+        print("FCP            :  {:.2f}".format(FracClosePtsPerEvent[outliers[i]]*100) + "%")
+        plot_3d_event(DataList, Labels, outliers[i])
+       
+    
+###########################################################################################################################
+###############     Model Performances Section                                                              ###############     
+###############     Functions dedicated at the visualization/claculations of the model parformances         ###############
+###############                                                                                             ###############
+###########################################################################################################################
+
+
+def make_nn_plots(history, min_acc = 0.95):
+    
+    """This function prints performance of a neural network per epoch (model loss & accuracy)
+    
+    Arguments:
+        history: history object obtained when fitting a tensorflow neural network
+        min_acc: set min axis value for accuracy. By default the plot has y_min=0.95
     Returns:
-    The model.
+        None
     """
-# This loads the VGG16 model from TensorFlow with ImageNet weights
-    vgg_model = tf.keras.applications.VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
     
-# First we flatten out the features from the VGG16 model
-    net = layers.Flatten()(vgg_model.output)
-
-# We create a new fully-connected layer that takes the flattened features as its input
-    net = layers.Dense(512, activation=tf.nn.relu)(net)
-# And we add one more hidden layer
-    net = layers.Dense(512, activation=tf.nn.relu)(net)
-
-# Then we add a final layer which is connected to the previous layer and
-# groups our images into one of the three classes
-    output = layers.Dense(1, activation=tf.nn.sigmoid)(net)
-
-# Finally, we create a new model whose input is that of the VGG16 model and whose output
-# is the final new layer we just created
-    model = tf.keras.Model(inputs=vgg_model.input, outputs=output)
     
-# We loop through all layers except the last four and specify that we do not want 
-# their weights to be updated during training. Again, the weights of the convolutional
-# layers have already been trained for general-purpose feature extraction, and we only
-# want to update the fully-connected layers that we just added.
-    for layer in model.layers[:-4]:
-        layer.trainable = False
+    
+    fig, ax = plt.subplots(1, 2, figsize=(14, 6))
+    
+    num_epochs = len(history.history['loss'])
+    
+    # avoid plotting every epochs ticks (e.g. in autoencoders num_epochs is definitely too  high)
+    max_x_ticks = 10 
+    if num_epochs > max_x_ticks: 
+        x_step = math.floor(num_epochs / max_x_ticks)
+    else:
+        x_step = 1
+    # Loss **********************
+    ax[0].set_title("Model Loss")
+    # X-axis
+    ax[0].set_xlabel("Epoch")
+    ax[0].set_xlim(1,num_epochs)
+    ax[0].set_xticks(range(1,num_epochs+1,x_step))
+    # Y-axis
+    ax[0].set_ylabel("Loss")
 
-    return model
+    # Plotting
+    ax[0].plot(range(1,num_epochs+1),history.history['loss'], label='Training')
+    ax[0].plot(range(1,num_epochs+1),history.history['val_loss'], label='Validation')  
+    ax[0].legend()
+
+    # Accuracy **********************
+    ax[1].set_title("Model Accuracy")
+    # X-axis
+    ax[1].set_xlabel("Epoch")
+    ax[1].set_xlim(1,num_epochs)
+    ax[1].set_xticks(range(1,num_epochs+1,x_step))
+    # Y-axis
+    ax[1].set_ylabel("Accuracy")
+    ax[1].set_ylim(min_acc,1)
+    # Plotting
+    ax[1].plot(range(1,num_epochs+1),history.history['acc'], label='Training')
+    ax[1].plot(range(1,num_epochs+1),history.history['val_acc'], label='Validation')
+    ax[1].legend()
+    
+    
+    
+def plot_confusion_matrix(y_true,
+                          y_pred,
+                          classes,
+                          title=None,
+                          cmap=plt.cm.Blues):
+    
+    """This function prints and plots the confusion matrix.
+    
+    Adapted from:
+    https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
+    
+    Arguments:
+        y_true: Real class labels.
+        y_pred: Predicted class labels.
+        classes: List of class names.
+        title: Title for the plot.
+        cmap: Colormap to be used.
+    
+    Returns:
+        None.
+    """
+    if not title:
+        title = 'Confusion matrix'
+
+    # Compute confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=80)
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    ax.figure.colorbar(im, ax=ax)
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=classes, yticklabels=classes,
+           title=title,
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
+
+    # Loop over data dimensions and create text annotations.
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], 'd'),
+                    ha='center', va='center',
+                    color='white' if cm[i, j] > thresh else 'black')
+    fig.tight_layout()
+    plt.show()
+    
+    
+
+    
+def print_model_performance(labels, 
+                            predictions,
+                            title = "INPUT SET TYPE"):
+    
+    """This function prints performance statistics of a model: confusion matrix, precision,
+    f1-score and mathews correlation coefficient.
+    
+    Arguments:
+        dataset = DataList (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
+    """
+    
+    accuracy = accuracy_score(labels, predictions)
+    precision = precision_score(labels, predictions)
+    recall = recall_score(labels, predictions)
+    confmat = confusion_matrix(labels, predictions)
+    f1 = f1_score(labels, predictions)
+    mcc = matthews_corrcoef(labels, predictions)
+    
+    print("Model performance for %s set:" %title)
+    print("--------------------------------------------------------")
+    print("Accuracy  : {:.2f}".format(accuracy*100) + "%")
+    print("Precision : {:.2f}".format(precision*100) + "%")
+    print("Recall    : {:.2f}".format(recall*100) + "%")
+    print("F1-score  : {:.4f}".format(f1))
+    print("MCC       : {:.4f}".format(mcc))
+    plot_confusion_matrix(labels, predictions, ["beam","reaction"])
+    print()
+    
+    
+###########################################################################################################################
+###############     ML Algorithms:                                                                          ###############     
+###############     Functions used in the first algorithms tried to approach the problem                    ###############
+###############     Logistic Regression, RandomForests and Grid Search, KMeans                              ###############
+###########################################################################################################################
 
 def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
     
@@ -360,8 +583,10 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
         sys.exit('Cluster number not fine!')
     
 
-    """This function finds the best mapping form k-means cluster
-    to beam or reaction event for a given number of clusters
+    """
+    Description:
+        This function finds the best mapping form k-means cluster
+        to beam or reaction event for a given number of clusters.
     
     Arguments:
         n_cl : number of clusters used in k-means
@@ -434,6 +659,193 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
     return KM_pred_train, KM_pred_val, assoc
 
 
+##################################################################################################
+###############     CNN Section                                                    ###############     
+###############     Function used in the section: Convolutional Neural Network     ###############
+###############     These function deals meanly with images manipulations          ###############
+##################################################################################################
+
+def prepare_images_data(DataList):
+    
+
+    points = []
+
+    # Convert the data in points , which contain only x,y and pixel value.
+    for i in range(len(DataList)): # loop on event number
+        points.append([])
+        for j in range(len(DataList[i])): # loop on event rows
+            points[i].append([])
+            for ax in range(2):
+                points[i][j].append(DataList[i][j][ax]) # x,y values
+                
+
+    x_values_List = []
+    y_values_List = []
+    
+    for i in range(len(DataList)): # loop on event number
+        for j in range(len(DataList[i])): # loop on event rows
+            x_values_List.append(DataList[i][j][0]) 
+            y_values_List.append(DataList[i][j][1])   
+            
+    xy_values = np.array(list(zip(x_values_List,y_values_List)))
+
+    
+    return points, xy_values
+
+
+def plot_pad_plane(xy_values):
+    
+    fig, ax = plt.subplots(2,2, figsize=(18, 18))
+    ax[0][0].set_title("Entire Pad Plane")
+    ax[0][0].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[0][0].set_xlabel("X")
+    ax[0][0].set_ylabel("Y")    
+    ax[0][0].set_xticks(np.arange(-250, +251, 50))
+    ax[0][0].set_yticks(np.arange(-250, +251, 50))
+    ax[0][0].set_xlim(-270,+270)
+    ax[0][0].set_ylim(-270,+270) 
+
+    ax[0][1].set_title("Positive Quadrant")
+    ax[0][1].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[0][1].set_xlabel("X")
+    ax[0][1].set_ylabel("Y")    
+    ax[0][1].set_xticks(np.arange(0, +251, 50))
+    ax[0][1].set_yticks(np.arange(0, +251, 50))
+    ax[0][1].set_xlim(0,+270)
+    ax[0][1].set_ylim(0,+270)
+
+    ax[1][0].set_title("Small Portion around the origin")
+    ax[1][0].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[1][0].set_xlabel("X")
+    ax[1][0].set_ylabel("Y")    
+    ax[1][0].set_xticks(np.arange(-15, +16, 5))
+    ax[1][0].set_yticks(np.arange(-15, +16, 5))
+    ax[1][0].set_xlim(-15,+15)
+    ax[1][0].set_ylim(-15,+15) 
+    ax[1][0].grid(color='gray', linestyle='-', linewidth=1)
+    
+    ax[1][1].set_title("Smaller to Bigger Pad Region ")
+    ax[1][1].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[1][1].set_xlabel("X")
+    ax[1][1].set_ylabel("Y")    
+    ax[1][1].set_xticks(np.arange(50, +151, 50))
+    ax[1][1].set_yticks(np.arange(75, +176, 50))
+    ax[1][1].set_xlim(50,+150)
+    ax[1][1].set_ylim(75,+175)
+
+    #fig.tight_layout()
+    plt.show()
+
+
+def show_grid(xy_values, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
+    """ This function gets the grid parameters in input,
+    show the grid info, and plot the grid. 
+    In this way it is possible to choose whehter keep or modifiyng the grid,
+    before generate the image.
+    The grid is squared, and has the same dimension all along the axis.
+    x_fea, y_fea = points.
+    x_lim, y_lim = extreme of the grid
+    x_spc, y _spc = grid spacing (width and height of the single grid square)
+    x_shift, y _shift = is the grid symmetric respect the origin? if not, insert the shift in respect to the origin
+    """
+      
+    # Calculate number of pixels
+    x_pxl = math.ceil((x_lim+abs(x_shift))/x_spc)*2 
+    y_pxl = math.ceil((y_lim+abs(y_shift))/y_spc)*2 
+    
+    print("Grid Parameters:")
+    print("")
+    
+    # X information
+    print("X-direction:")
+    print("----------------------------------")
+    print("X grid spacing: ", x_spc)
+    print("First x cell limits: ", (x_shift, x_spc+x_shift))
+    print("Number of pixel on x direction: %i*2 = "%(x_pxl/2), x_pxl)
+    print("")
+    # Y information
+    print("Y-direction:")
+    print("----------------------------------")
+    print("X grid spacing: ", y_spc)
+    print("First y cell limits: ", (y_shift, y_spc+y_shift))
+    print("Number of pixel in y direction: %i*2 = "%(y_pxl/2), y_pxl)
+
+    
+    # Using Pad Grid (Grid used in converting in picture)
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.set_title("Pixel Grid")
+    ax.scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_xticks(np.arange(+x_shift-x_spc*10, -x_shift+x_spc*10+0.1, x_spc))
+    ax.set_yticks(np.arange(+y_shift-y_spc*10, -y_shift+y_spc*10+0.1, y_spc))
+    ax.set_xlim(-15,+15)
+    ax.set_ylim(-15,+15)
+
+    plt.grid(color='blue', linestyle='-', linewidth=1)
+    
+    fig.tight_layout()
+    plt.show()
+    
+    
+    
+def generate_images(points, pixel_values, x_lim, y_lim, x_spc, y_spc, x_shift, y_shift):
+    
+    x_pxl = math.ceil((x_lim+abs(x_shift))/x_spc)*2 
+    y_pxl = math.ceil((y_lim+abs(y_shift))/y_spc)*2 
+    
+    images = np.zeros((len(points),y_pxl,x_pxl))
+    
+    for i in range(len(points)): # loop on event number
+        for j in range(len(points[i])): # loop on event rows
+            n_y = math.floor((points[i][j][1]-x_shift)/y_spc) + round(y_pxl/2) # calculate which y image pixel fired
+            n_x = math.floor((points[i][j][0]-y_shift)/x_spc) + round(x_pxl/2) # calculate which x image pixel fired
+   
+            images[i,n_y,n_x] =  images[i,n_y,n_x] + pixel_values[i][j]
+    print("The images generated have a dimension :", (y_pxl, x_pxl))
+    
+    return images 
+
+
+
+def reduce_images_dim(images, dim):
+    
+    images_red = np.zeros((images.shape[0],dim,dim))
+    
+    for i in range(images.shape[0]): 
+        for j in range(dim): #y
+            for h in range(dim): # x
+                y_idx = round(images.shape[1]/2)-round(dim/2) +j
+                x_idx = round(images.shape[2]/2)-round(dim/2) +h
+                images_red[i,j,h] =  images[i, y_idx, x_idx]
+                
+    print("Images of dimension:", images.shape[1:]," reduced to dimension of ", images_red.shape[1:])
+    print("The external pixels have been removed")
+    return images_red    
+
+
+
+def merge_pixels(images, merge_x, merge_y):
+    
+    y_pxl_new = math.ceil(images.shape[1]/merge_y)
+    x_pxl_new = math.ceil(images.shape[2]/merge_x)
+    
+    images_merged = np.zeros((images.shape[0],y_pxl_new,x_pxl_new))
+ 
+    for i in range(images.shape[0]): 
+        for j in range(images.shape[1]): #y
+            for h in range(images.shape[2]): # x
+                n_y_new = math.floor(j/merge_y)
+                n_x_new = math.floor(h/merge_x)
+                
+                images_merged[i][n_y_new][n_x_new] = images_merged[i][n_y_new][n_x_new] + images[i][j][h]
+                
+    print("Images of dimension:", images.shape[1:]," reduced to dimension of ", images_merged.shape[1:])
+    print("The pixels have been merged in block of ", (merge_x, merge_y), " along the x, and y axes respectively")
+    return images_merged  
+
+
+    
 def normalize_image_data(images):
     """ Takes an imported set of images and normalizes values to between
     0 and 255 using min-max scaling across the whole image set.
@@ -451,13 +863,137 @@ def normalize_image_data(images):
         print("Error: File given is made by black images (only zeros)")
     else: 
         if (img_max - img_min) > 0:
-            images = np.around( 255 * (images - img_min) / (img_max - img_min))
+            images = np.ceil( 255 * (images - img_min) / (img_max - img_min))
         else: 
             images = 0
             print("Error: File given is made by same values images, now it has been normalized to 1")
             
     return images
 
+
+
+def get_xy_event(points, event_idx):
+    
+    x_event_List = []
+    y_event_List = []
+    
+    for j in range(len(points[event_idx])): # loop on event rows
+            x_event_List.append(points[event_idx][j][0]) 
+            y_event_List.append(points[event_idx][j][1])   
+            
+    xy_event = np.array(list(zip(x_event_List,y_event_List)))
+    
+    
+    return xy_event
+
+
+
+def plot_images(images, labels, free_range = 1, plot_row=3, idx=0):
+
+    if plot_row == 1:
+        fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
+        for j in range(2):
+            
+            if free_range == 1:
+                my_pic=ax[j].imshow(images[idx], cmap='inferno')
+                
+            else:
+                my_pic=ax[j].imshow(images[idx], vmin=0, vmax=255, cmap='inferno')   
+                
+            if labels[idx]>0.5:
+                ax[j].set_title("Image "+ str(idx) + ": Reaction Event")
+            else:
+                ax[j].set_title("Image "+ str(idx) + ": Beam Event")
+            
+            ax[j].set_xlabel("Pixel X")
+            ax[j].set_ylabel("Pixel Y")
+        
+
+            idx = idx +1
+            cbar = fig.colorbar(my_pic, ax= ax[j], extend='both')
+            cbar.minorticks_on()
+    else:    
+        fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
+        for i in range(plot_row):
+            for j in range(2):
+                
+                if free_range == 1:
+                    my_pic=ax[i][j].imshow(images[idx],  cmap='inferno')
+                else:
+                    my_pic=ax[i][j].imshow(images[idx], vmin=0, vmax=255, cmap='inferno') 
+                
+                if labels[idx]>0.5:
+                    ax[i][j].set_title("Image "+ str(idx) + ": Reaction Event")
+                else:
+                    ax[i][j].set_title("Image "+ str(idx) + ": Beam Event")
+            
+                ax[i][j].set_xlabel("Pixel X")
+                ax[i][j].set_ylabel("Pixel Y")
+        
+
+                idx = idx +1
+                cbar = fig.colorbar(my_pic, ax= ax[i][j], extend='both')
+                cbar.minorticks_on()
+
+    #fig.tight_layout() # adjust automatically spacing between sublots
+    plt.show()
+    
+    
+    
+    
+    
+def build_pretrained_vgg_model(input_shape, num_classes):
+    """Constructs a CNN with a VGG16's convolutional base and two fully-connected hidden layers on top.
+    The convolutional base is frozen (the weights can't be updated) and has weights from training on the ImageNet dataset.
+
+    Returns:
+    The model.
+    """
+# This loads the VGG16 model from TensorFlow with ImageNet weights
+    vgg_model = tf.keras.applications.VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
+    
+# First we flatten out the features from the VGG16 model
+    net = layers.Flatten()(vgg_model.output)
+
+# We create a new fully-connected layer that takes the flattened features as its input
+    net = layers.Dense(512, activation=tf.nn.relu)(net)
+# And we add one more hidden layer
+    net = layers.Dense(512, activation=tf.nn.relu)(net)
+
+# Then we add a final layer which is connected to the previous layer and
+# groups our images into one of the three classes
+    output = layers.Dense(1, activation=tf.nn.sigmoid)(net)
+
+# Finally, we create a new model whose input is that of the VGG16 model and whose output
+# is the final new layer we just created
+    model = tf.keras.Model(inputs=vgg_model.input, outputs=output)
+    
+# We loop through all layers except the last four and specify that we do not want 
+# their weights to be updated during training. Again, the weights of the convolutional
+# layers have already been trained for general-purpose feature extraction, and we only
+# want to update the fully-connected layers that we just added.
+    for layer in model.layers[:-4]:
+        layer.trainable = False
+
+    return model
+   
+
+#########################################################################################################
+###############     Dimensionality Reduction Section                                      ###############     
+###############     Function used in the section: Dimensionality Reduction Algorithms     ###############
+#########################################################################################################
+
+def plot_latent_space(X_train, Labels_train, DRA):
+    plt.figure(figsize=(9,6))
+    plt.scatter(X_train[Labels_train>0.5, 0], X_train[Labels_train>0.5, 1], c="blue", label='Reaction')
+    plt.scatter(X_train[Labels_train<0.5, 0], X_train[Labels_train<0.5, 1], c="red", label='Beam')
+    plt.title("Training set after " + DRA, fontsize=18)
+    plt.xlabel("$x_1$", fontsize=14)
+    plt.ylabel("$x_2$", fontsize=14, rotation=0)
+    plt.legend()
+    plt.show()
+    
+    
 def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, contour=True):
     """Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb
        Plots the decision boundary for a classifier on a 2d feature set.
@@ -604,6 +1140,7 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
     #ax[3][1].set_title("K-means (2 clusters) after t-SNE", fontsize=18)
     #ax[3][1].scatter(KM2_TSNE.cluster_centers_[:,0], KM2_TSNE.cluster_centers_[:,1], marker='x', s=50, linewidths=50,
      #       color='k', zorder=11, alpha=1)
+    
 
 def make_2d_vis_autoencoder(xt,yt,Labels_train):
     
@@ -655,33 +1192,53 @@ def make_2d_vis_autoencoder(xt,yt,Labels_train):
 
 
     #Make a figure with subplots
-    fig, ax = plt.subplots(3, figsize=(18, 24))
+    fig, ax = plt.subplots(3, figsize=(9, 18))
 
     plt.sca(ax[0])
     plot_decision_boundary(logreg_autoencoder, dataset, Labels_train)
     ax[0].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0].text(-1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[0].set_title("Logistic regression after Autoencoder", fontsize=18)
+    ax[0].set_title("Logistic regression after Encoder", fontsize=18)
 
     plt.sca(ax[1])
     plot_decision_boundary(RFC_autoencoder, dataset, Labels_train)
     ax[1].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1].text(1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[1].set_title("Random forest after Autoencoder", fontsize=18)
+    ax[1].set_title("Random forest after Encoder", fontsize=18)
 
     plt.sca(ax[2])
     plot_decision_boundary(SVM_autoencoder, dataset, Labels_train)
     ax[2].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2].text(-0.5, 0.7, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[2].set_title("Support vector machine after Autoencoder", fontsize=18)
+    ax[2].set_title("Support vector machine after Encoder", fontsize=18)
 
         
-def plot_encoder_net(x,y):
+def plot_encoder_net(x,y, labels):
+    
+    x0 = []
+    y0 = []
+    
+    x1 = []
+    y1 = []
+    
+    for xx,yy,ll in zip(x,y,labels):
+        
+        if(ll == 0):
+            
+            x0.append(xx)
+            y0.append(yy)
+        else:
+            
+            x1.append(xx)
+            y1.append(yy)
     
     fig, ax = plt.subplots(figsize=(9, 6))
     plt.title("Training Set Latent representation", fontsize=20)
-
-    plt.scatter(x, y, c = 'black')
+    
+    plt.scatter(x1, y1, c = 'blue', label='reaction')
+    plt.scatter(x0, y0, c = 'red', label='beam')
+    
+    
 
     plt.xlabel('X Latent Space', fontsize=18)
     ax.set_xticks(np.arange(-1,1,0.2))
@@ -692,6 +1249,9 @@ def plot_encoder_net(x,y):
     ax.set_ylim(-1,+1)
 
     fig.tight_layout()
+    plt.legend(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     plt.show()
     
 def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
@@ -726,7 +1286,7 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
                 p_beam_y.append(p[0][1])
 
     
-    fig, ax = plt.subplots(figsize=(12, 9))
+    fig, ax = plt.subplots(figsize=(9, 6))
     plt.title(title, fontsize=20);
 
     # Plotting dots : color is true label
@@ -743,11 +1303,11 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
 
 
     plt.xlabel('X Latent Space', fontsize=18)
-    ax.set_xticks(np.arange(-1,1,0.2))
+    ax.set_xticks(np.arange(-1,1.1,0.2))
     ax.set_xlim(-1,+1)
 
     plt.ylabel('Y Latent Space', fontsize=18)
-    ax.set_yticks(np.arange(-1,1,0.2))
+    ax.set_yticks(np.arange(-1,1.1,0.2))
     ax.set_ylim(-1,+1)
 
     plt.legend(fontsize=20);
@@ -756,3 +1316,28 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
 
     fig.tight_layout()
     plt.show()
+    
+def get_predictor(classifier_type, xtrain, labels):
+    
+    if classifier_type == 'LR':
+        
+        from sklearn.linear_model import LogisticRegression
+        
+        logreg = LogisticRegression()
+        logreg.fit(xtrain, labels)
+        return logreg
+    
+            
+    elif classifier_type == 'RF':
+        
+        from sklearn.ensemble import RandomForestClassifier
+        RFC_pred = RandomForestClassifier()
+        RFC_pred.fit(xtrain, labels)
+        return RFC_pred
+    
+    elif classifier_type == 'SVM':
+        
+        from sklearn import svm
+        SVM_pred = svm.SVC()
+        SVM_pred.fit(xtrain, labels)
+        return SVM_pred
