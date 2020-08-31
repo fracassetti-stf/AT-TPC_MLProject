@@ -1198,27 +1198,47 @@ def make_2d_vis_autoencoder(xt,yt,Labels_train):
     plot_decision_boundary(logreg_autoencoder, dataset, Labels_train)
     ax[0].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0].text(-1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[0].set_title("Logistic regression after Autoencoder", fontsize=18)
+    ax[0].set_title("Logistic regression after Encoder", fontsize=18)
 
     plt.sca(ax[1])
     plot_decision_boundary(RFC_autoencoder, dataset, Labels_train)
     ax[1].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1].text(1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[1].set_title("Random forest after Autoencoder", fontsize=18)
+    ax[1].set_title("Random forest after Encoder", fontsize=18)
 
     plt.sca(ax[2])
     plot_decision_boundary(SVM_autoencoder, dataset, Labels_train)
     ax[2].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2].text(-0.5, 0.7, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[2].set_title("Support vector machine after Autoencoder", fontsize=18)
+    ax[2].set_title("Support vector machine after Encoder", fontsize=18)
 
         
-def plot_encoder_net(x,y):
+def plot_encoder_net(x,y, labels):
+    
+    x0 = []
+    y0 = []
+    
+    x1 = []
+    y1 = []
+    
+    for xx,yy,ll in zip(x,y,labels):
+        
+        if(ll == 0):
+            
+            x0.append(xx)
+            y0.append(yy)
+        else:
+            
+            x1.append(xx)
+            y1.append(yy)
     
     fig, ax = plt.subplots(figsize=(9, 6))
     plt.title("Training Set Latent representation", fontsize=20)
 
-    plt.scatter(x, y, c = 'black')
+    plt.scatter(x0, y0, c = 'red', label='beam')
+    plt.scatter(x1, y1, c = 'blue', label='reaction')
+    
+    
 
     plt.xlabel('X Latent Space', fontsize=18)
     ax.set_xticks(np.arange(-1,1,0.2))
@@ -1229,6 +1249,9 @@ def plot_encoder_net(x,y):
     ax.set_ylim(-1,+1)
 
     fig.tight_layout()
+    plt.legend(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     plt.show()
     
 def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
