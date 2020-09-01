@@ -1252,6 +1252,19 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 
 def plot_latent_space(X_train, Labels_train, DRA):
     
+    """
+    Description: 
+        This function plot the latent space of certain Dimensionaly Reduction Algorithm.
+    
+    Arguments:
+        X_train : features of training set.
+        Labels_train : training labels
+        DRA: string containing the Dimensionaly Reduction Algorithm name.
+        
+    Returns:
+        None.
+    """
+    
     plt.figure(figsize=(9,6))
     plt.scatter(X_train[Labels_train>0.5, 0], X_train[Labels_train>0.5, 1], c="blue", label='Reaction')
     plt.scatter(X_train[Labels_train<0.5, 0], X_train[Labels_train<0.5, 1], c="red", label='Beam')
@@ -1263,18 +1276,24 @@ def plot_latent_space(X_train, Labels_train, DRA):
     
     
 def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, contour=True):
-    """Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb
-       Plots the decision boundary for a classifier on a 2d feature set.
-    Arguments:
-        clf : fitted classifier to be used (needs a predict method)
-        X : 2d feature set
-        y : labels corresponding to X
-        axes : axes limits for plotting
-        alpha : opacity of points
-        contour : whether to show decision boundary or not.
-    Returns:
-        none
+    
     """
+    Description:
+        Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb.
+        Plots the decision boundary for a classifier on a 2d feature set.
+        
+    Arguments:
+        clf : fitted classifier to be used (needs a predict method).
+        X : 2d feature set.
+        y : labels corresponding to X.
+        axes : axes limits for plotting.
+        alpha : opacity of points.
+        contour : whether to show decision boundary or not.
+        
+    Returns:
+        None.
+    """
+    
     from matplotlib.colors import ListedColormap
     x1s = np.linspace(axes[0], axes[1], 100)
     x2s = np.linspace(axes[2], axes[3], 100)
@@ -1293,60 +1312,63 @@ def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, con
     plt.xlabel(r"$x_1$", fontsize=18)
     plt.ylabel(r"$x_2$", fontsize=18, rotation=0)
 
-def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
+def make_2d_vis(X_train_PCA, X_train_TSNE, Labels_train):
     
-    """This function creates the visualizations of different models
-    trained on the 2d PCA and TSNE reduced dataset.
-    Adapted from: https://github.com/ageron/handson-ml2
+    """
+    Description: 
+        This function creates the visualizations of different models trained on the 2d PCA and TSNE reduced dataset.
+        Adapted from: https://github.com/ageron/handson-ml2.
     
     Arguments:
-        xSimple_train_PCA : PCA features of training set
-        xSimple_train_TSNE : t-SNE features of training set
-        labels_train : training labels
+        X_train_PCA : PCA features of training set.
+        X_train_TSNE : t-SNE features of training set.
+        Labels_train : training labels
+        
     Returns:
-        none
+        None.
     """
+    
     import matplotlib.pyplot as plt
     #First we fit the models
     from sklearn.linear_model import LogisticRegression
     
     logreg_PCA = LogisticRegression()
-    logreg_PCA.fit(xSimple_train_PCA, Labels_train)
-    LR_pred_train_PCA = logreg_PCA.predict(xSimple_train_PCA)
+    logreg_PCA.fit(X_train_PCA, Labels_train)
+    LR_pred_train_PCA = logreg_PCA.predict(X_train_PCA)
     
     logreg_TSNE = LogisticRegression()
-    logreg_TSNE.fit(xSimple_train_TSNE, Labels_train)
-    LR_pred_train_TSNE = logreg_TSNE.predict(xSimple_train_TSNE)
+    logreg_TSNE.fit(X_train_TSNE, Labels_train)
+    LR_pred_train_TSNE = logreg_TSNE.predict(X_train_TSNE)
     
     from sklearn.ensemble import RandomForestClassifier
     
     RFC_PCA = RandomForestClassifier()
-    RFC_PCA.fit(xSimple_train_PCA, Labels_train)
-    RFC_pred_train_PCA = RFC_PCA.predict(xSimple_train_PCA)
+    RFC_PCA.fit(X_train_PCA, Labels_train)
+    RFC_pred_train_PCA = RFC_PCA.predict(X_train_PCA)
     
     RFC_TSNE = RandomForestClassifier()
-    RFC_TSNE.fit(xSimple_train_TSNE, Labels_train)
-    RFC_pred_train_TSNE = RFC_TSNE.predict(xSimple_train_TSNE)
+    RFC_TSNE.fit(X_train_TSNE, Labels_train)
+    RFC_pred_train_TSNE = RFC_TSNE.predict(X_train_TSNE)
     
     from sklearn.cluster import KMeans
     
     KM2_PCA = KMeans(n_clusters=2)
-    KM2_PCA.fit(xSimple_train_PCA)
-    KM2_pred_train_PCA = KM2_PCA.predict(xSimple_train_PCA)
+    KM2_PCA.fit(X_train_PCA)
+    KM2_pred_train_PCA = KM2_PCA.predict(X_train_PCA)
     
     KM2_TSNE = KMeans(n_clusters=2)
-    KM2_TSNE.fit(xSimple_train_TSNE)
-    KM2_pred_train_TSNE = KM2_TSNE.predict(xSimple_train_TSNE)
+    KM2_TSNE.fit(X_train_TSNE)
+    KM2_pred_train_TSNE = KM2_TSNE.predict(X_train_TSNE)
     
     from sklearn import svm
     
     SVM_PCA = svm.SVC()
-    SVM_PCA.fit(xSimple_train_PCA, Labels_train)
-    SVM_pred_train_PCA = SVM_PCA.predict(xSimple_train_PCA)
+    SVM_PCA.fit(X_train_PCA, Labels_train)
+    SVM_pred_train_PCA = SVM_PCA.predict(X_train_PCA)
     
     SVM_TSNE = svm.SVC()
-    SVM_TSNE.fit(xSimple_train_TSNE, Labels_train)
-    SVM_pred_train_TSNE = SVM_TSNE.predict(xSimple_train_TSNE)
+    SVM_TSNE.fit(X_train_TSNE, Labels_train)
+    SVM_pred_train_TSNE = SVM_TSNE.predict(X_train_TSNE)
     
     
     #Make a figure with subplots
@@ -1354,7 +1376,7 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
     
 
     plt.sca(ax[0][0])
-    plot_decision_boundary(logreg_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    plot_decision_boundary(logreg_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     ax[0][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[0][0].set_title("Logistic regression after PCA", fontsize=18)
@@ -1362,39 +1384,39 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
     
    
     plt.sca(ax[0][1])
-    plot_decision_boundary(logreg_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    plot_decision_boundary(logreg_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     ax[0][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[0][1].set_title("Logistic regression after t-SNE", fontsize=18)
 
     
     plt.sca(ax[1][0])
-    plot_decision_boundary(RFC_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    plot_decision_boundary(RFC_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     ax[1][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[1][0].set_title("Random forest after PCA", fontsize=18)
                            
     plt.sca(ax[1][1])
-    plot_decision_boundary(RFC_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    plot_decision_boundary(RFC_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     ax[1][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[1][1].set_title("Random forest after t-SNE", fontsize=18)
     
     plt.sca(ax[2][0])
-    plot_decision_boundary(SVM_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    plot_decision_boundary(SVM_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     ax[2][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[2][0].set_title("Support vector machine after PCA", fontsize=18)
                            
     plt.sca(ax[2][1])
-    plot_decision_boundary(SVM_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    plot_decision_boundary(SVM_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     ax[2][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[2][1].set_title("Support vector machine after t-SNE", fontsize=18)
     
     #KMeans does not work properly
     #plt.sca(ax[3][0])
-    #plot_decision_boundary(KM2_PCA, xSimple_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
+    #plot_decision_boundary(KM2_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     #ax[3][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     #ax[3][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
     #ax[3][0].set_title("K-means (2 clusters) after PCA", fontsize=18)
@@ -1402,7 +1424,7 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
     #        color='k', zorder=11, alpha=1)
                            
     #plt.sca(ax[3][1])
-    #plot_decision_boundary(KM2_TSNE, xSimple_train_TSNE, Labels_train, axes=[-60,60,-50,60])
+    #plot_decision_boundary(KM2_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     #ax[3][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     #ax[3][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
     #ax[3][1].set_title("K-means (2 clusters) after t-SNE", fontsize=18)
@@ -1412,16 +1434,18 @@ def make_2d_vis(xSimple_train_PCA,xSimple_train_TSNE,Labels_train):
 
 def make_2d_vis_autoencoder(xt,yt,Labels_train):
     
-    """This function creates the visualizations of different models
-    trained on the 2d PCA and TSNE reduced dataset.
-    Adapted from: https://github.com/ageron/handson-ml2
+    """
+    Description:
+        This function creates the visualizations of trained model on the 2d autoencoder reduced dataset.
+        Adapted from: https://github.com/ageron/handson-ml2
     
     Arguments:
-        xSimple_train_PCA : PCA features of training set
-        xSimple_train_TSNE : t-SNE features of training set
-        labels_train : training labels
+        xt : x of latent space (with encoded)
+        yt : y of latent space (with encoded)
+        Labels_train : training labels
+        
     Returns:
-        none
+        None.
     """
     dataset = []
 
