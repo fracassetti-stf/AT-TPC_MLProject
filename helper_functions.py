@@ -1548,6 +1548,21 @@ def plot_encoder_net(x,y, labels):
     
 def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
     
+    """
+        Description:
+            This function plots the kMeans latent space visualizing clusters position and decision boundaries.
+
+        Arguments:
+            encoder_pred : encoded train data
+            Labels_train : training labels
+            clusters : clusters position coordinates
+            assoc : kmeans cluster to class mapping
+            title    : Plot tile
+
+        Returns:
+            None.
+    """
+        
     #Assign true label to (x,y) points in latent space
     get_true_reaction = encoder_pred[Labels_train > 0.5]
     get_true_beam = encoder_pred[Labels_train < 0.5]
@@ -1610,6 +1625,20 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
     plt.show()
     
 def get_predictor(classifier_type, xtrain, labels):
+    
+    """
+    Description:
+        This function returns a classifier trained using the provided xtrain and labels.
+        It supports Logistic regression, Random Forest and Support Vector Machine.
+    
+    Arguments:
+        classifier_type : kind of classifier ('LR' for logistic regression, 'RF' for random forest, 'SVM' for support vector machine)
+        xtrain : training examples
+        labels : training labels
+        
+    Returns:
+        a trained classifier
+    """
     
     if classifier_type == 'LR':
         
