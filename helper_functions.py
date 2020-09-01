@@ -1447,6 +1447,7 @@ def make_2d_vis_autoencoder(xt,yt,Labels_train):
     Returns:
         None.
     """
+    
     dataset = []
 
     for x,y in zip(xt,yt):
