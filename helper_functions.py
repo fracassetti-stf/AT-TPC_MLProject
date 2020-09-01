@@ -18,20 +18,25 @@ layers = tf.keras.layers
 
 ###########################################################################################################################
 ###############     Data Import Section                                                                     ###############     
-###############     Functions dedicated at the first part of the report (i.e. before any ML algorithms):    ###############
-###############     data import, data pre-processing, and data-visualization.                               ###############
+###############     Functions dedicated at the first part of the report :                                   ###############
+###############     data import, and data pre-processing.                                                   ###############
 ###########################################################################################################################
 
 def load_data(hf):
     
-    """This function loads the dataset and removes empty events
+    """
+    Description:
+        This function loads the dataset and removes empty events, and it assigns labels to each event.
+        It also prints information about the dataset, such as number of event, and event removed.
     
     Arguments:
         hf: file containing dataset
+        
     Returns:
-        AllData : list containing features for nonempty events
+        DataList: list containing events (cleaned, i.e. only non-empty events).
         Labels: numpy ndarray containing labels for nonempty events
     """
+    
     # Importing the data in a python list: AllDataList 
     AllDataList = []
     for i in range(len(hf.keys())):
@@ -77,21 +82,28 @@ def load_data(hf):
     return DataList, Labels
 
 
-def plot_3d_event(DataList,
-                  Labels,
-                  idx):
+
+###########################################################################################################################
+###############     Data Exploration Section                                                                ###############     
+###############     Functions dedicated at the second part of the report:                                   ###############
+###############     Data-visualization, Features definition and visualizaion                                ###############
+###########################################################################################################################
+
+def plot_3d_event(DataList, Labels, idx):
     
-    """This function plots a single event in a 3d plot
-    with x,y,z for each pad fired
+    """
+    Description:
+        This function plots a single event in a 3d plot with x,y,z for each pad fired.
     
     Arguments:
-        dataset = DataList (unless you create different list)
-        labels = Labels (used for setting beam or reaction in title)
-        idx = index of event in dataset
+        DataList: Data list containing the events.
+        Labels: Labels array (used for setting beam or reaction in title).
+        idx = index of event in dataset to print.
     
     Returns:
-        None
+        None.
     """
+    
     fig = plt.figure(figsize=(4,4))
     ax = fig.add_subplot(111, projection='3d') 
     
@@ -116,21 +128,21 @@ def plot_3d_event(DataList,
     fig.tight_layout()
     plt.show()
 
-def plot_3d_events(DataList,
-                  Labels,
-                  idx = 0):
+def plot_3d_events(DataList, Labels, idx = 0):
     
-    """This function plots a single event in a 3d plot
-    with x,y,z for each pad fired
+    """
+    Description:
+        This function plots 12 =(3 rows, and 4 columns) events in a 3d plot with x,y,z for each pad fired.
     
     Arguments:
-        DataList = DataList (unless you create different list)
-        labels = Labels (used for setting beam or reaction in title)
-        idx = index of event in dataset
+        DataList: Data list containing the events.
+        Labels: Labels array (used for setting beam or reaction in title).
+        idx = index of the first event in dataset to print.
     
     Returns:
-        None
+        None.
     """
+    
     fig = plt.figure(figsize=(16,12))
     idx=0
     
@@ -162,6 +174,19 @@ def plot_3d_events(DataList,
 
     
 def plot_2d_events(DataList, Labels , idx = 0):
+
+    """
+    Description:
+        This function plots 12 =(3 rows, and 4 columns) events in a 2d plot with x,y for each pad fired.
+    
+    Arguments:
+        DataList: Data list containing the events.
+        Labels: Labels array (used for setting beam or reaction in title).
+        idx = index of the first event in dataset to print.
+    
+    Returns:
+        None.
+    """
     
     fig,ax = plt.subplots(3,4,figsize=(16,12))
     idx=0
@@ -190,21 +215,28 @@ def plot_2d_events(DataList, Labels , idx = 0):
 
 def calc_features(DataList):
     
-    """This function calculates the features for all events
+    """
+    Description:
+        This function calculates the features for all events.
     
     Arguments:
-        AllData : array containing all event data
+        DataList : list containing the event data.
+        
     Returns:
         MeanXPerEvent : mean x per event
         MeanYPerEvent : mean y per event
         MeanZPerEvent : mean z per event
-        SumAPerEvent : sum of charges deposited per event
-        PadsPerEvent : nr of pads fired per event
+        
         MeanWeightedXPerEvent : weighted mean x per event
         MeanWeightedYPerEvent : weighted mean y per event
+        MeanWeightedZPerEvent : weighted mean z per event
+        
         StDevXPerEvent : standard deviation of x per event
         StDevYPerEvent : standard deviation of y per event
         StDevZPerEvent : standard deviation of z per event
+        
+        SumAPerEvent : sum of charges deposited per event
+        PadsPerEvent : nr of pads fired per event
         FracClosePtsPerEvent : fraction of points close to z-axis per event (satisfying x^2+y^2<100)
     """
     
@@ -265,6 +297,20 @@ def calc_features(DataList):
 
 
 def train_split(train_idx, Labels):
+    
+    """
+    Description:
+        This function split the array of the (train, but can works also for val/test) idx in two arrays based on labels.
+    
+    Arguments:
+        train_idx: list of all indexes of the train set.
+        Labels: Labels array (used for setting beam or reaction in title).
+    
+    Returns:
+        train_r_idx: subset of indexes which have label=1.
+        train_b_idx: subset of indexes which have label=0.
+    """
+    
     # Splitting train_ind into beam and reaction indexes
     train_r_idx = [] # List of indexes of "Reaction" training event
     train_b_idx = [] # List of indexes of "Beam" training event
@@ -281,6 +327,26 @@ def train_split(train_idx, Labels):
     return train_r_idx, train_b_idx
 
 def plot_features_hist(train_r_idx, r_color, train_b_idx, b_color, PadsPerEvent, SumAPerEvent, FracClosePtsPerEvent):
+    
+    """
+    Note: This function is specific for the AT-TPC Report, it avoids the report to become too long.
+    
+    Description:
+        This function print 3 histogram of the last three arrays passed through arguments, 
+        diveded according to labels.
+    
+    Arguments:
+        train_r_idx: List of indexes of the train set, which have label=1.
+        r_color: Color in which label=1 data will be printed.
+        train_b_idx: List of indexes of the train set, which have label=0.
+        b_color: Color in which label=0 data will be printed.
+        PadsPerEvent: Array of pads fired per event.
+        SumAPerEvent: Array of sum Q per event.
+        FracClosePtsPerEvent: Array of fraction of close pads values per event.
+           
+    Returns:
+        None.
+    """
     
     fig, ax = plt.subplots(1, 3, figsize=(18, 5))
 
@@ -319,6 +385,27 @@ def plot_features_hist(train_r_idx, r_color, train_b_idx, b_color, PadsPerEvent,
     
 def plot_features_scatter(train_r_idx, r_color, train_b_idx, b_color, MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent):
 
+    """
+    Note: This function is specific for the AT-TPC Report, it avoids the report to become too long.
+    
+    Description:
+        This function print 6 scatter plot combinations of:
+        MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, and
+        StDevXPerEvent, StDevYPerEvent, StDevZPerEvent,
+        diveded according to labels.
+    
+    Arguments:
+        train_r_idx: List of indexes of the train set, which have label=1.
+        r_color: Color in which label=1 data will be printed.
+        train_b_idx: List of indexes of the train set, which have label=0.
+        b_color: Color in which label=0 data will be printed.
+        MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent:
+        arrays of quatities (name is self-explanatory).
+           
+    Returns:
+        None.
+    """
+    
     #Define legend for 2d (scatter)plots
     legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
                         Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
@@ -372,6 +459,26 @@ def plot_features_scatter(train_r_idx, r_color, train_b_idx, b_color, MeanXPerEv
 
 def plot_features_scatter2(train_r_idx, r_color, train_b_idx, b_color, StDevZPerEvent, FracClosePtsPerEvent, PadsPerEvent, SumAPerEvent):
 
+    """
+    Note: This function is specific for the AT-TPC Report, it avoids the report to become too long.
+    
+    Description:
+        This function print 2 scatter plots: 
+        StDevZPerEvent vs FracClosePtsPerEvent, and PadsPerEvent vs SumAPerEvent, 
+        diveded according to labels.
+    
+    Arguments:
+        train_r_idx: List of indexes of the train set, which have label=1.
+        r_color: Color in which label=1 data will be printed.
+        train_b_idx: List of indexes of the train set, which have label=0.
+        b_color: Color in which label=0 data will be printed.
+        StDevZPerEvent, FracClosePtsPerEvent, PadsPerEvent, SumAPerEvent:
+        arrays of quatities (name is self-explanatory).
+           
+    Returns:
+        None.
+    """
+        
     #Define legend for 2d (scatter)plots
     legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
                         Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
@@ -399,6 +506,24 @@ def plot_features_scatter2(train_r_idx, r_color, train_b_idx, b_color, StDevZPer
     
 def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax, PadsPerEvent, PadsMax,  FracClosePtsPerEvent, FCPMin):
     
+    """
+    Note: This function is specific for the AT-TPC Report, it avoids the report to become too long.
+    
+    Description:
+        This function print outliers information, and plot them in a 3d graph. 
+    
+    Arguments:
+        DataList: Data list containing the events.
+        Labels: Labels array (used for setting beam or reaction in title).
+        train_b_ixd = index of the beam event in dataset.
+        StDevXPerEvent, StDevXMax: StDevXPerEvent, and value above which you define an event as outlier. 
+        PadsPerEvent, PadsMax: PadsPerEvent, and value above which you define an event as outlier.   
+        FracClosePtsPerEvent, FCPMin: FracClosePtsPerEvent, and value below which you define an event as outlier. 
+        
+    Returns:
+        None.
+    """
+        
     large_x_stdev = train_b_idx[StDevXPerEvent[train_b_idx] > StDevXMax] 
     large_pads = train_b_idx[PadsPerEvent[train_b_idx] > PadsMax]  
     small_frac_close = train_b_idx[FracClosePtsPerEvent[train_b_idx] < FCPMin] 
@@ -423,19 +548,22 @@ def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax,
        
     
 ###########################################################################################################################
-###############     Model Performances Section                                                              ###############     
+###############     Model Performances                                                                      ###############     
 ###############     Functions dedicated at the visualization/claculations of the model parformances         ###############
-###############                                                                                             ###############
+###############     Used in the section: Machine Learning                                                   ###############
 ###########################################################################################################################
 
 
 def make_nn_plots(history, min_acc = 0.95):
     
-    """This function prints performance of a neural network per epoch (model loss & accuracy)
+    """
+    Description:
+    This function prints performance of a neural network per epoch (model loss & accuracy)
     
     Arguments:
         history: history object obtained when fitting a tensorflow neural network
         min_acc: set min axis value for accuracy. By default the plot has y_min=0.95
+        
     Returns:
         None
     """
@@ -482,16 +610,12 @@ def make_nn_plots(history, min_acc = 0.95):
     
     
     
-def plot_confusion_matrix(y_true,
-                          y_pred,
-                          classes,
-                          title=None,
-                          cmap=plt.cm.Blues):
+def plot_confusion_matrix(y_true, y_pred, classes, title=None, cmap=plt.cm.Blues):
     
-    """This function prints and plots the confusion matrix.
-    
-    Adapted from:
-    https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
+    """
+    Description:
+        This function prints and plots the confusion matrix.
+        Adapted from: https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
     
     Arguments:
         y_true: Real class labels.
@@ -503,6 +627,7 @@ def plot_confusion_matrix(y_true,
     Returns:
         None.
     """
+    
     if not title:
         title = 'Confusion matrix'
 
@@ -537,12 +662,12 @@ def plot_confusion_matrix(y_true,
     
 
     
-def print_model_performance(labels, 
-                            predictions,
-                            title = "INPUT SET TYPE"):
+def print_model_performance(labels, predictions, title = "INPUT SET TYPE"):
     
-    """This function prints performance statistics of a model: confusion matrix, precision,
-    f1-score and mathews correlation coefficient.
+    """
+    Description: 
+        This function prints performance statistics of a model: confusion matrix, precision,
+        f1-score and mathews correlation coefficient.
     
     Arguments:
         dataset = DataList (unless you create different list)
@@ -572,17 +697,14 @@ def print_model_performance(labels,
     
     
 ###########################################################################################################################
-###############     ML Algorithms:                                                                          ###############     
-###############     Functions used in the first algorithms tried to approach the problem                    ###############
-###############     Logistic Regression, RandomForests and Grid Search, KMeans                              ###############
+###############     "Simple" ML Algorithms:                                                                 ###############   
+###############     Functions used in the first algorithms tried to approach the problem:                   ###############
+###############     Logistic Regression, RandomForests and Grid Search, KMeans, SVM                         ###############
 ###########################################################################################################################
+
 
 def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
     
-    if not (isinstance(n_cl, int) or n_cl<2):
-        sys.exit('Cluster number not fine!')
-    
-
     """
     Description:
         This function finds the best mapping form k-means cluster
@@ -594,12 +716,18 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
         x_train : training features
         x_val : validation features
         labels_train : training labels
+        
     Returns:
         KM_pred_train : optimal kmeans predictions for training set
         KM_pred_val : optimal kmeans predictions for validation set
         assoc : kmeans cluster to class mapping
     """
     
+    
+    if not (isinstance(n_cl, int) or n_cl<2):
+        sys.exit('Cluster number not fine!')
+        
+        
     n_cmb = 2**n_cl-2 # possible combinations of assignments clusters to labels
     
     KM_pred_train = clust.predict(x_train)
@@ -667,7 +795,22 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
 
 def prepare_images_data(DataList):
     
-
+    """
+    Description:
+        This function prepare the data in order to be used later on for image generation, 
+        and pad plane structure visualization.
+    
+    Arguments:
+        DataList: Data list containing the events.
+        
+    Returns:
+        points: list of event reduced only to x,y information, 
+        data can be associated to the respective event.
+        
+        xy_values: 2d array of all the events acquired (1st column: x values, 2 column: y values),
+        data cannot be assoiated to the respect event anymore.
+    """
+     
     points = []
 
     # Convert the data in points , which contain only x,y and pixel value.
@@ -694,6 +837,26 @@ def prepare_images_data(DataList):
 
 
 def plot_pad_plane(xy_values):
+    
+    """
+    Note: This function is specific for the AT-TPC Report, it avoids the report to become too long.
+    
+    Description:
+        This function plot the pad plane structure, recieving in input the x,y values of all the events.
+        The pad plane is visualized through 4 scatter plot: 
+        Entire Pad Plane, 
+        Positive Quadrant,
+        Small Portion around the origin,
+        Smaller to Bigger Pad Region.
+        
+        
+    
+    Arguments:
+        xy_values: 2d array of all the events acquired (1st column: x values, 2 column: y values).
+        
+    Returns:
+        None.
+    """
     
     fig, ax = plt.subplots(2,2, figsize=(18, 18))
     ax[0][0].set_title("Entire Pad Plane")
@@ -738,15 +901,22 @@ def plot_pad_plane(xy_values):
 
 
 def show_grid(xy_values, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
-    """ This function gets the grid parameters in input,
-    show the grid info, and plot the grid. 
-    In this way it is possible to choose whehter keep or modifiyng the grid,
-    before generate the image.
-    The grid is squared, and has the same dimension all along the axis.
-    x_fea, y_fea = points.
-    x_lim, y_lim = extreme of the grid
-    x_spc, y _spc = grid spacing (width and height of the single grid square)
-    x_shift, y _shift = is the grid symmetric respect the origin? if not, insert the shift in respect to the origin
+    
+    """ 
+    Description:
+        This function gets the grid parameters in input, show the grid info, and plot the grid. 
+        In this way it is possible to choose whehter keep or modifiyng the grid, before generating the image.
+        The grid is squared, and has the same dimension all along the axis.
+    
+    Arguments:
+        xy_values: 2d array of all the events acquired (1st column: x values, 2 column: y values).
+        x_lim, y_lim = extreme of the grid in the x,y dimension respectively.
+        x_spc, y _spc = grid spacing (x/width and y/height of the single grid square).
+        x_shift, y _shift = is the grid symmetric respect the origin? if not, insert the shift in respect to the origin,
+        the shift should have the range (-spc/2, +spc/2).
+        
+    Return:
+        None.
     """
       
     # Calculate number of pixels
@@ -790,7 +960,27 @@ def show_grid(xy_values, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
     
     
 def generate_images(points, pixel_values, x_lim, y_lim, x_spc, y_spc, x_shift, y_shift):
+
+    """ 
+    Description:
+        This function gets the grid parameters in input, show the grid info, and plot the grid. 
+        In this way it is possible to choose whehter keep or modifiyng the grid, before generating the image.
+        The grid is squared, and has the same dimension all along the axis.
+        The function print the dimension of the image obtained.
     
+    Arguments:
+        points: list of event reduced only to x,y information. 
+        pixel_values: list of values to associate to every pixel.
+        x_lim, y_lim = extreme of the grid in the x,y dimension respectively.
+        x_spc, y _spc = grid spacing (x/width and y/height of the single grid square).
+        x_shift, y _shift = is the grid symmetric respect the origin? if not, insert the shift in respect to the origin,
+        the shift should have the range (-spc/2, +spc/2).
+        
+    Return:
+        images: images generated using the spc and shift defined through input parameters,
+        the pixel are filled by values defined in pixel_values list.
+    """
+        
     x_pxl = math.ceil((x_lim+abs(x_shift))/x_spc)*2 
     y_pxl = math.ceil((y_lim+abs(y_shift))/y_spc)*2 
     
@@ -810,6 +1000,23 @@ def generate_images(points, pixel_values, x_lim, y_lim, x_spc, y_spc, x_shift, y
 
 def reduce_images_dim(images, dim):
     
+    """ 
+    Description:
+        This function reduce the dimension of an image, in a squared image of dimension (dim x dim).
+        Only the central part of the image is conserved, the external pixel are simple removed.
+        The function print the dimension of the image obtained.
+        
+    Arguments:
+        images: images to be reduced. 
+        dim: dimension of the reduced image.
+        
+    Return:
+        images_red: reduced images, images_red have dimension (dim x dim).
+    """
+    
+    if  (images.shape[1] < dim or images.shape[2] < dim):
+        sys.exit('Image dimension is lower than the desired dimension. It is not possible to reduce the images.')    
+        
     images_red = np.zeros((images.shape[0],dim,dim))
     
     for i in range(images.shape[0]): 
@@ -826,6 +1033,21 @@ def reduce_images_dim(images, dim):
 
 
 def merge_pixels(images, merge_x, merge_y):
+    
+    """ 
+    Description:
+        This function generate new imaged, merging block of (merge_x, merge_y) pixels of the initial imaged.
+        The function print the dimension of the image obtained.
+        
+    Arguments:
+        images: images to be merged. 
+        merge_x: adjacent pixels to merge in x direction.
+        merge_y: adjacent pixels to merge in y direction.
+        
+    Return:
+        images_merged: new generated images, in which the adjacent pixels have been marged
+        according to input parameters.
+    """
     
     y_pxl_new = math.ceil(images.shape[1]/merge_y)
     x_pxl_new = math.ceil(images.shape[2]/merge_x)
@@ -847,13 +1069,19 @@ def merge_pixels(images, merge_x, merge_y):
 
     
 def normalize_image_data(images):
-    """ Takes an imported set of images and normalizes values to between
-    0 and 255 using min-max scaling across the whole image set.
-    Arguments:
-        images : 2d image with amplitude
-    Returns:
-        images : min-max scaled images
+    
     """
+    Description:
+        Takes a set of images and normalizes values between 0 and 255,
+        using min-max scaling across the whole image set.
+        
+    Arguments:
+        images : images to normalize.
+        
+    Returns:
+        images : 0-255 scaled images, pixels have only int values, value assigend through function math.ceil.
+    """
+    
     img_max = np.amax(images)
     img_min = np.amin(images)
     #Debug 
@@ -874,6 +1102,18 @@ def normalize_image_data(images):
 
 def get_xy_event(points, event_idx):
     
+    """
+    Description:
+        This function return an 2d array of x,y point of the event specified through event_idx.
+        
+    Arguments:
+        points: list of event reduced only to x,y information.
+        event_idx: index of desired event. 
+        
+    Returns:
+        xy_event: (x,y)-tuple of specified event.
+    """
+    
     x_event_List = []
     y_event_List = []
     
@@ -888,8 +1128,23 @@ def get_xy_event(points, event_idx):
 
 
 
-def plot_images(images, labels, free_range = 1, plot_row=3, idx=0):
+def plot_images(images, Labels, free_range = 1, plot_row=3, idx=0):
 
+    """
+    Description:
+        This function plots images, in a scructure of 2 columns, and a desired amount of rows (plot_row),
+        starting from event index = idx,
+        it is possible to leave the color scale range free (free_range = 1), or to force it to be 0-255 (free_range != 1).
+        
+    Arguments:
+        images: images to plot.
+        Labels: array of labels associated to every image.
+        
+    Returns:
+        None.
+    """
+    
+    
     if plot_row == 1:
         fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
         for j in range(2):
@@ -900,7 +1155,7 @@ def plot_images(images, labels, free_range = 1, plot_row=3, idx=0):
             else:
                 my_pic=ax[j].imshow(images[idx], vmin=0, vmax=255, cmap='inferno')   
                 
-            if labels[idx]>0.5:
+            if Labels[idx]>0.5:
                 ax[j].set_title("Image "+ str(idx) + ": Reaction Event")
             else:
                 ax[j].set_title("Image "+ str(idx) + ": Beam Event")
@@ -922,7 +1177,7 @@ def plot_images(images, labels, free_range = 1, plot_row=3, idx=0):
                 else:
                     my_pic=ax[i][j].imshow(images[idx], vmin=0, vmax=255, cmap='inferno') 
                 
-                if labels[idx]>0.5:
+                if Labels[idx]>0.5:
                     ax[i][j].set_title("Image "+ str(idx) + ": Reaction Event")
                 else:
                     ax[i][j].set_title("Image "+ str(idx) + ": Beam Event")
@@ -943,47 +1198,60 @@ def plot_images(images, labels, free_range = 1, plot_row=3, idx=0):
     
     
 def build_pretrained_vgg_model(input_shape, num_classes):
-    """Constructs a CNN with a VGG16's convolutional base and two fully-connected hidden layers on top.
-    The convolutional base is frozen (the weights can't be updated) and has weights from training on the ImageNet dataset.
-
-    Returns:
-    The model.
+    
     """
-# This loads the VGG16 model from TensorFlow with ImageNet weights
+    Description:
+        Constructs a CNN with a VGG16's convolutional base and two fully-connected hidden layers on top.
+        The convolutional base is frozen (the weights can't be updated),
+        and has weights from training on the ImageNet dataset.
+
+    Arguments:
+        input_shape: image shape (x-pixels x y-pixels). 
+        num_classes: number of output classes.
+    
+    Returns:
+        The model.
+    """
+    
+    # This loads the VGG16 model from TensorFlow with ImageNet weights
     vgg_model = tf.keras.applications.VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
     
-# First we flatten out the features from the VGG16 model
+    # First we flatten out the features from the VGG16 model
     net = layers.Flatten()(vgg_model.output)
 
-# We create a new fully-connected layer that takes the flattened features as its input
+    # We create a new fully-connected layer that takes the flattened features as its input
     net = layers.Dense(512, activation=tf.nn.relu)(net)
-# And we add one more hidden layer
+    # And we add one more hidden layer
     net = layers.Dense(512, activation=tf.nn.relu)(net)
 
-# Then we add a final layer which is connected to the previous layer and
-# groups our images into one of the three classes
+    # Then we add a final layer which is connected to the previous layer and
+    # groups our images into one of the three classes
     output = layers.Dense(1, activation=tf.nn.sigmoid)(net)
 
-# Finally, we create a new model whose input is that of the VGG16 model and whose output
-# is the final new layer we just created
+    # Finally, we create a new model whose input is that of the VGG16 model and whose output
+    # is the final new layer we just created
     model = tf.keras.Model(inputs=vgg_model.input, outputs=output)
     
-# We loop through all layers except the last four and specify that we do not want 
-# their weights to be updated during training. Again, the weights of the convolutional
-# layers have already been trained for general-purpose feature extraction, and we only
-# want to update the fully-connected layers that we just added.
+    # We loop through all layers except the last four and specify that we do not want 
+    # their weights to be updated during training. Again, the weights of the convolutional
+    # layers have already been trained for general-purpose feature extraction, and we only
+    # want to update the fully-connected layers that we just added.
     for layer in model.layers[:-4]:
         layer.trainable = False
 
     return model
    
+    
 
 #########################################################################################################
 ###############     Dimensionality Reduction Section                                      ###############     
 ###############     Function used in the section: Dimensionality Reduction Algorithms     ###############
+###############     PCA, t-SNE and (Auto)Encoder                                          ###############
 #########################################################################################################
 
+
 def plot_latent_space(X_train, Labels_train, DRA):
+    
     plt.figure(figsize=(9,6))
     plt.scatter(X_train[Labels_train>0.5, 0], X_train[Labels_train>0.5, 1], c="blue", label='Reaction')
     plt.scatter(X_train[Labels_train<0.5, 0], X_train[Labels_train<0.5, 1], c="red", label='Beam')
