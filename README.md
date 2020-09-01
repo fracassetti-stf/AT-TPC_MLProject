@@ -18,6 +18,11 @@ This session describes what this project is meant to look like, and our final go
 
 ## 1) Recent updates on the work: (please indicate the date and your name) 
 
+### 2020_09_01 SF : Adding Description to helper_functions and Report updates
+I added a description to avery function in helper_function.py.
+Report updates: added some comments to feature plots, added first part of conclusions.
+
+
 ### 2020_08_31 SF : AT-TPC_Report Complete
 The Final report is complete and running in every part. Every model gives very good results (at least 98%). 
 It still need revision in some parts.   
