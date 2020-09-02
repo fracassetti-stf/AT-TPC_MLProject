@@ -1,14 +1,18 @@
+import math
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
-from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
-                             matthews_corrcoef)
+from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import Axes3D
 
-import tensorflow as tf
+
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score, recall_score, precision_score,
+                             matthews_corrcoef)
+
 # This is simply an alias for convenience
 layers = tf.keras.layers
 
-import math
+
 
 
 
@@ -73,9 +77,8 @@ def load_data(hf):
     return DataList, Labels
 
 
-
-def plot_3d_event(dataset,
-                  labels,
+def plot_3d_event(DataList,
+                  Labels,
                   idx):
     
     """This function plots a single event in a 3d plot
@@ -89,30 +92,101 @@ def plot_3d_event(dataset,
     Returns:
         None
     """
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111, projection='3d')
-
-    xvalues = np.zeros(len(dataset[idx]))
-    yvalues = np.zeros(len(dataset[idx]))
-    zvalues = np.zeros(len(dataset[idx]))
+    fig = plt.figure(figsize=(4,4))
+    ax = fig.add_subplot(111, projection='3d') 
     
-    for i in range(len(dataset[idx])):
-        xvalues[i] = dataset[idx][i][0]
-        yvalues[i] = dataset[idx][i][1]
-        zvalues[i] = dataset[idx][i][2]
-    
-    
-    ax.scatter(xvalues, yvalues, zvalues, marker='o')
-    if (labels[idx]==0):
-        ax.set_title('Beam Event #' + str(idx), pad = 15, fontsize = 14)
+    if (Labels[idx]==0):
+        ax.set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
     else:
-        ax.set_title('Reaction Event #' + str(idx), pad = 15, fontsize = 14)
-    
-    ax.set_xlabel('X[mm]')
-    ax.set_ylabel('Y[mm]')
-    ax.set_zlabel('Z[mm]')
+        ax.set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+       
+    ax.scatter(DataList[idx]['x'], DataList[idx]['y'], DataList[idx]['z'], marker='o')
+    ax.set_xticks(np.arange(-200, +201, 100))
+    ax.set_yticks(np.arange(-200, +201, 100))
+    ax.set_zticks(np.arange(0, +1501, 500))
+        
+    ax.set_xlim(-270,+270)
+    ax.set_ylim(-270,+270)
+    ax.set_zlim(0,+1500)
+        
+    ax.set_xlabel('X [mm]')
+    ax.set_ylabel('Y [mm]')
+    ax.set_zlabel('Z [mm]')
+
+    fig.tight_layout()
     plt.show()
 
+def plot_3d_events(DataList,
+                  Labels,
+                  idx = 0):
+    
+    """This function plots a single event in a 3d plot
+    with x,y,z for each pad fired
+    
+    Arguments:
+        DataList = DataList (unless you create different list)
+        labels = Labels (used for setting beam or reaction in title)
+        idx = index of event in dataset
+    
+    Returns:
+        None
+    """
+    fig = plt.figure(figsize=(16,12))
+    idx=0
+    
+    for i in range(3):
+        for j in range(4): 
+            ax = fig.add_subplot(3,4,idx+1, projection='3d')
+            if (Labels[idx]==0):
+                ax.set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+            else:
+                ax.set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+       
+            ax.scatter(DataList[idx]['x'], DataList[idx]['y'], DataList[idx]['z'], marker='o')
+            ax.set_xticks(np.arange(-200, +201, 100))
+            ax.set_yticks(np.arange(-200, +201, 100))
+            ax.set_zticks(np.arange(0, +1501, 500))
+        
+            ax.set_xlim(-270,+270)
+            ax.set_ylim(-270,+270)
+            ax.set_zlim(0,+1500)
+        
+            ax.set_xlabel('X [mm]')
+            ax.set_ylabel('Y [mm]')
+            ax.set_zlabel('Z [mm]')
+        
+            idx = idx + 1
+    
+    fig.tight_layout()
+    plt.show()
+
+    
+def plot_2d_events(DataList, Labels , idx = 0):
+    
+    fig,ax = plt.subplots(3,4,figsize=(16,12))
+    idx=0
+    for i in range(3):
+        for j in range(4): 
+            
+            if (Labels[idx]==0):
+                ax[i][j].set_title('Event ' + str(idx) + " (Beam)", pad = 15, fontsize = 14)
+            else:
+                ax[i][j].set_title('Event ' + str(idx) + " (Reaction)", pad = 15, fontsize = 14)
+        
+            ax[i][j].scatter(DataList[idx]['x'],DataList[idx]['y'],c=np.log(DataList[idx]['A']),cmap='gray')
+            ax[i][j].set_xticks(np.arange(-200, +201, 100))
+            ax[i][j].set_yticks(np.arange(-250, +251, 50))
+            ax[i][j].set_xlim(-270,+270)
+            ax[i][j].set_ylim(-270,+270) 
+            idx = idx+1
+
+    fig.text(0.5,0, 'X [mm]', ha='center')
+    fig.text(0,0.5, 'Y [mm]', ha='center',rotation='vertical')
+
+    fig.tight_layout()
+    plt.show()   
+    
+    
 
 def calc_features(DataList):
     
@@ -190,6 +264,164 @@ def calc_features(DataList):
     MeanWeightedXPerEvent, MeanWeightedYPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent,FracClosePtsPerEvent)
 
 
+def train_split(train_idx, Labels):
+    # Splitting train_ind into beam and reaction indexes
+    train_r_idx = [] # List of indexes of "Reaction" training event
+    train_b_idx = [] # List of indexes of "Beam" training event
+    for i in train_idx:
+        if Labels[i]>0.5:
+            train_r_idx.append(i) # Indexes of "Reaction" training data
+        else:
+            train_b_idx.append(i) # Indexes of "Beam" training data  
+    # Converting into numpy array for later use
+    train_r_idx = np.array(train_r_idx) 
+    train_b_idx = np.array(train_b_idx)
+
+   
+    return train_r_idx, train_b_idx
+
+def plot_features_hist(train_r_idx, r_color, train_b_idx, b_color, PadsPerEvent, SumAPerEvent, FracClosePtsPerEvent):
+    
+    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+
+    #mannualy set number of bins for both two histgrams and make the bin widths equal to each other
+
+    bins1=np.histogram(np.hstack((PadsPerEvent[train_r_idx],PadsPerEvent[train_b_idx])), bins=10)[1]
+    bins2=np.histogram(np.hstack((SumAPerEvent[train_r_idx],SumAPerEvent[train_b_idx])), bins=10)[1]
+    bins3=np.histogram(np.hstack((FracClosePtsPerEvent[train_r_idx],FracClosePtsPerEvent[train_b_idx])), bins=10)[1]
+
+    ax[0].hist(PadsPerEvent[train_r_idx],bins=bins1, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[0].hist(PadsPerEvent[train_b_idx],bins=bins1, color = b_color, label = 'Beam', histtype = 'step')
+    ax[0].set_title("Active Pads Histogram")
+    ax[0].set_xlabel("Number of Pads")
+    ax[0].set_ylabel("Counts")
+    ax[0].legend()
+
+    ax[1].hist(SumAPerEvent[train_r_idx],bins=bins2, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[1].hist(SumAPerEvent[train_b_idx],bins=bins2, color = b_color, label = 'Beam', histtype = 'step')
+    ax[1].set_title("Charge Deposition Histogram")
+    ax[1].set_xlabel("Total Charge")
+    ax[1].set_ylabel("Counts")
+    ax[1].legend()
+
+    ax[2].hist(FracClosePtsPerEvent[train_r_idx],bins=bins3, color = r_color, label = 'Reaction', histtype = 'step')
+    ax[2].hist(FracClosePtsPerEvent[train_b_idx],bins=bins3,color = b_color, label = 'Beam', histtype = 'step')
+    ax[2].set_title("Fraction of Close Pads Histogram")
+    ax[2].set_xlabel("Fraction of Close Pads")
+    ax[2].set_ylabel("Counts")
+    ax[2].legend(loc='upper left')
+
+    fig.tight_layout() # adjust automatically spacing between sublots
+    plt.show()
+   
+
+
+    
+def plot_features_scatter(train_r_idx, r_color, train_b_idx, b_color, MeanXPerEvent, MeanYPerEvent, MeanZPerEvent, StDevXPerEvent, StDevYPerEvent, StDevZPerEvent):
+
+    #Define legend for 2d (scatter)plots
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
+                        Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
+    fig, ax = plt.subplots(2, 3, figsize=(18, 10))
+    # Mean values
+    ax[0][0].scatter(MeanXPerEvent[train_r_idx],MeanYPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0][0].scatter(MeanXPerEvent[train_b_idx],MeanYPerEvent[train_b_idx], c = b_color)
+    ax[0][0].set_title("Mean X vs Mean Y")
+    ax[0][0].set_xlabel(" Mean X")
+    ax[0][0].set_ylabel("Mean Y")
+    ax[0][0].legend(handles=legend_elements)
+
+    ax[0][1].scatter(MeanXPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color,  alpha=0.8)
+    ax[0][1].scatter(MeanXPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
+    ax[0][1].set_title("Mean X vs Mean Z")
+    ax[0][1].set_xlabel("Mean X")
+    ax[0][1].set_ylabel("Mean Z")
+    ax[0][1].legend(handles=legend_elements)
+
+    ax[0][2].scatter(MeanYPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0][2].scatter(MeanYPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
+    ax[0][2].set_title("Mean Y vs Mean Z")
+    ax[0][2].set_xlabel("Mean Y")
+    ax[0][2].set_ylabel("Mean Z")
+    ax[0][2].legend(handles=legend_elements)
+
+    # Standard Deviations
+    ax[1][0].scatter(StDevXPerEvent[train_r_idx],StDevYPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][0].scatter(StDevXPerEvent[train_b_idx],StDevYPerEvent[train_b_idx], c = b_color)
+    ax[1][0].set_title("stdev(X) vs stdev(Y)")
+    ax[1][0].set_xlabel("stdev(X)")
+    ax[1][0].set_ylabel("stdev(Y)")
+    ax[1][0].legend(handles=legend_elements)
+
+    ax[1][1].scatter(StDevXPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][1].scatter(StDevXPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
+    ax[1][1].set_title("stdev(X) vs stdev(Z)")
+    ax[1][1].set_xlabel("stdev(X)")
+    ax[1][1].set_ylabel("stdev(Z)")
+    ax[1][1].legend(handles=legend_elements)
+
+    ax[1][2].scatter(StDevYPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1][2].scatter(StDevYPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
+    ax[1][2].set_title("stdev(Y) vs stdev(Z)")
+    ax[1][2].set_xlabel("stdev(Y)")
+    ax[1][2].set_ylabel("stdev(Z)")
+    ax[1][2].legend(handles=legend_elements)
+
+    fig.tight_layout()
+    plt.show()
+
+def plot_features_scatter2(train_r_idx, r_color, train_b_idx, b_color, StDevZPerEvent, FracClosePtsPerEvent, PadsPerEvent, SumAPerEvent):
+
+    #Define legend for 2d (scatter)plots
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label='Beam', markerfacecolor=b_color, markersize=15),
+                        Line2D([0], [0], marker='o', color='w', label='Reaction', markerfacecolor=r_color, markersize=15)]
+    
+    fig, ax = plt.subplots(1,2, figsize=(12, 5))
+
+    ax[0].scatter(StDevZPerEvent[train_r_idx],FracClosePtsPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[0].scatter(StDevZPerEvent[train_b_idx],FracClosePtsPerEvent[train_b_idx], c = b_color)
+    ax[0].set_title("stdev(Z) vs Fraction of Close Pads")
+    ax[0].set_xlabel("stdev(Z)")
+    ax[0].set_ylabel("Fraction of Close Pads")
+    ax[0].legend(handles=legend_elements)
+
+    ax[1].scatter(PadsPerEvent[train_r_idx],SumAPerEvent[train_r_idx], c = r_color, alpha=0.8)
+    ax[1].scatter(PadsPerEvent[train_b_idx],SumAPerEvent[train_b_idx], c = b_color)
+    ax[1].set_title("Number of Pads vs Total Charge")
+    ax[1].set_xlabel("Number of Pads")
+    ax[1].set_ylabel("Total Charge")
+    ax[1].legend(handles=legend_elements)
+
+    fig.tight_layout()
+    plt.show()
+    
+    
+    
+def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax, PadsPerEvent, PadsMax,  FracClosePtsPerEvent, FCPMin):
+    
+    large_x_stdev = train_b_idx[StDevXPerEvent[train_b_idx] > StDevXMax] 
+    large_pads = train_b_idx[PadsPerEvent[train_b_idx] > PadsMax]  
+    small_frac_close = train_b_idx[FracClosePtsPerEvent[train_b_idx] < FCPMin] 
+    
+    print("Outliers using current criteria:")
+    print("stdev(X) > ", StDevXMax, " cm      :", np.sort(large_x_stdev))
+    print("Number of Pads > ", PadsMax, " :", np.sort(large_pads))
+    print("FCP < ", FCPMin, "            :", np.sort(small_frac_close))
+
+    # Outliers that responde to (at least) one criterion 
+    outliers = np.union1d(np.union1d(large_x_stdev, large_pads),small_frac_close)
+    print("Outliers that satisfy at least one criterion:", outliers)
+    print("\n")
+
+    # Plotting Outliers
+    for i in range(len(outliers)):
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>> Outliers: ", outliers[i], "<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print("stdev(X)       : ", round(StDevXPerEvent[outliers[i]],3))
+        print("Number of Pads : ", int(PadsPerEvent[outliers[i]]))
+        print("FCP            :  {:.2f}".format(FracClosePtsPerEvent[outliers[i]]*100) + "%")
+        plot_3d_event(DataList, Labels, outliers[i])
+       
+    
 ###########################################################################################################################
 ###############     Model Performances Section                                                              ###############     
 ###############     Functions dedicated at the visualization/claculations of the model parformances         ###############
@@ -244,8 +476,8 @@ def make_nn_plots(history, min_acc = 0.95):
     ax[1].set_ylabel("Accuracy")
     ax[1].set_ylim(min_acc,1)
     # Plotting
-    ax[1].plot(range(1,num_epochs+1),history.history['accuracy'], label='Training')
-    ax[1].plot(range(1,num_epochs+1),history.history['val_accuracy'], label='Validation')
+    ax[1].plot(range(1,num_epochs+1),history.history['acc'], label='Training')
+    ax[1].plot(range(1,num_epochs+1),history.history['val_acc'], label='Validation')
     ax[1].legend()
     
     
@@ -351,8 +583,10 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
         sys.exit('Cluster number not fine!')
     
 
-    """This function finds the best mapping form k-means cluster
-    to beam or reaction event for a given number of clusters
+    """
+    Description:
+        This function finds the best mapping form k-means cluster
+        to beam or reaction event for a given number of clusters.
     
     Arguments:
         n_cl : number of clusters used in k-means
@@ -431,8 +665,9 @@ def best_cl_km(n_cl, clust, x_train, x_val, labels_train):
 ###############     These function deals meanly with images manipulations          ###############
 ##################################################################################################
 
-def images_preprocessing(DataList):
+def prepare_images_data(DataList):
     
+
     points = []
 
     # Convert the data in points , which contain only x,y and pixel value.
@@ -442,9 +677,8 @@ def images_preprocessing(DataList):
             points[i].append([])
             for ax in range(2):
                 points[i][j].append(DataList[i][j][ax]) # x,y values
+                
 
-
-    # Generate arrays to perform math operations
     x_values_List = []
     y_values_List = []
     
@@ -453,39 +687,57 @@ def images_preprocessing(DataList):
             x_values_List.append(DataList[i][j][0]) 
             y_values_List.append(DataList[i][j][1])   
             
-    x_values = np.array(x_values_List)
-    y_values = np.array(y_values_List)
+    xy_values = np.array(list(zip(x_values_List,y_values_List)))
 
-    x_max = np.amax(x_values)
-    x_min = np.amin(x_values)
     
-    y_max = np.amax(y_values)
-    y_min = np.amin(y_values)
+    return points, xy_values
+
+
+def plot_pad_plane(xy_values):
     
-    print("PAD PLANE Dimensions: ")
-    print("-----------------------------------------------------")
-    print("Max x: ", round(x_max,2)  ," and Min x: ",  round(x_min,2) )
-    print("Max y: ", round(y_max,2)  ," and Min y: ",  round(y_min,2) )
-    print("")
+    fig, ax = plt.subplots(2,2, figsize=(18, 18))
+    ax[0][0].set_title("Entire Pad Plane")
+    ax[0][0].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[0][0].set_xlabel("X")
+    ax[0][0].set_ylabel("Y")    
+    ax[0][0].set_xticks(np.arange(-250, +251, 50))
+    ax[0][0].set_yticks(np.arange(-250, +251, 50))
+    ax[0][0].set_xlim(-270,+270)
+    ax[0][0].set_ylim(-270,+270) 
+
+    ax[0][1].set_title("Positive Quadrant")
+    ax[0][1].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[0][1].set_xlabel("X")
+    ax[0][1].set_ylabel("Y")    
+    ax[0][1].set_xticks(np.arange(0, +251, 50))
+    ax[0][1].set_yticks(np.arange(0, +251, 50))
+    ax[0][1].set_xlim(0,+270)
+    ax[0][1].set_ylim(0,+270)
+
+    ax[1][0].set_title("Small Portion around the origin")
+    ax[1][0].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[1][0].set_xlabel("X")
+    ax[1][0].set_ylabel("Y")    
+    ax[1][0].set_xticks(np.arange(-15, +16, 5))
+    ax[1][0].set_yticks(np.arange(-15, +16, 5))
+    ax[1][0].set_xlim(-15,+15)
+    ax[1][0].set_ylim(-15,+15) 
+    ax[1][0].grid(color='gray', linestyle='-', linewidth=1)
     
-    x_uniques = np.unique(np.around(x_values,3))
-    y_uniques = np.unique(np.around(y_values,3))
-    
-    print("Possible positive values of x: ")
-    print(x_uniques[x_uniques>0][0:10], " and so on...")
-    print("Possible positive values of y: ")
-    print(y_uniques[y_uniques>0][0:10], " and so on...")
-    print("")
-    x_diff = np.diff(x_uniques)
-    y_diff = np.diff(y_uniques)
-    
-    return points, x_max, y_max
+    ax[1][1].set_title("Smaller to Bigger Pad Region ")
+    ax[1][1].scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
+    ax[1][1].set_xlabel("X")
+    ax[1][1].set_ylabel("Y")    
+    ax[1][1].set_xticks(np.arange(50, +151, 50))
+    ax[1][1].set_yticks(np.arange(75, +176, 50))
+    ax[1][1].set_xlim(50,+150)
+    ax[1][1].set_ylim(75,+175)
+
+    #fig.tight_layout()
+    plt.show()
 
 
-
-
-
-def show_grid(points, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
+def show_grid(xy_values, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
     """ This function gets the grid parameters in input,
     show the grid info, and plot the grid. 
     In this way it is possible to choose whehter keep or modifiyng the grid,
@@ -497,54 +749,38 @@ def show_grid(points, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
     x_shift, y _shift = is the grid symmetric respect the origin? if not, insert the shift in respect to the origin
     """
       
-    # Calculate number of pixel
-    
-    # X-direction
+    # Calculate number of pixels
     x_pxl = math.ceil((x_lim+abs(x_shift))/x_spc)*2 
     y_pxl = math.ceil((y_lim+abs(y_shift))/y_spc)*2 
     
     print("Grid Parameters:")
-    print("----------------------------------")
+    print("")
     
     # X information
-    print("Pixeling over x-direction:")
+    print("X-direction:")
+    print("----------------------------------")
     print("X grid spacing: ", x_spc)
     print("First x cell limits: ", (x_shift, x_spc+x_shift))
     print("Number of pixel on x direction: %i*2 = "%(x_pxl/2), x_pxl)
-    
+    print("")
     # Y information
-    print("Pixeling over y-direction:")
+    print("Y-direction:")
+    print("----------------------------------")
     print("X grid spacing: ", y_spc)
     print("First y cell limits: ", (y_shift, y_spc+y_shift))
     print("Number of pixel in y direction: %i*2 = "%(y_pxl/2), y_pxl)
 
     
-    # Generate arrays to perform math operations
-    x_values_List = []
-    y_values_List = []
-
-    
-    for i in range(len(DataList)): # loop on event number
-        for j in range(len(DataList[i])): # loop on event rows
-            x_values_List.append(DataList[i][j][0]) 
-            y_values_List.append(DataList[i][j][1])   
-
-    x_values = np.array(x_values_List)
-    y_values = np.array(y_values_List)
-
-    
-    print("Showing the Pixel Grid") 
     # Using Pad Grid (Grid used in converting in picture)
     fig, ax = plt.subplots(figsize=(8, 8))
-    ax.scatter(x_values,y_values, c = "black", alpha=0.8)
-    ax.set_title("Sum of All Events")
+    ax.set_title("Pixel Grid")
+    ax.scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    
-    ax.set_xticks(np.arange(+x_shift-x_spc*5, -x_shift+x_spc*5, x_spc))
-    ax.set_yticks(np.arange(+y_shift-y_spc*5, -y_shift+y_spc*5, y_spc))
-    ax.set_xlim(-10,+10)
-    ax.set_ylim(-10,+10) # I want to maintan plot symmetric
+    ax.set_xticks(np.arange(+x_shift-x_spc*10, -x_shift+x_spc*10+0.1, x_spc))
+    ax.set_yticks(np.arange(+y_shift-y_spc*10, -y_shift+y_spc*10+0.1, y_spc))
+    ax.set_xlim(-15,+15)
+    ax.set_ylim(-15,+15)
 
     plt.grid(color='blue', linestyle='-', linewidth=1)
     
@@ -566,41 +802,47 @@ def generate_images(points, pixel_values, x_lim, y_lim, x_spc, y_spc, x_shift, y
             n_x = math.floor((points[i][j][0]-y_shift)/x_spc) + round(x_pxl/2) # calculate which x image pixel fired
    
             images[i,n_y,n_x] =  images[i,n_y,n_x] + pixel_values[i][j]
-        
+    print("The images generated have a dimension :", (y_pxl, x_pxl))
+    
     return images 
 
 
 
 def reduce_images_dim(images, dim):
     
-    images_r = np.zeros((images.shape[0],dim,dim))
+    images_red = np.zeros((images.shape[0],dim,dim))
     
     for i in range(images.shape[0]): 
         for j in range(dim): #y
             for h in range(dim): # x
                 y_idx = round(images.shape[1]/2)-round(dim/2) +j
                 x_idx = round(images.shape[2]/2)-round(dim/2) +h
-                images_r[i,j,h] =  images[i, y_idx, x_idx]  
-    return images_r    
+                images_red[i,j,h] =  images[i, y_idx, x_idx]
+                
+    print("Images of dimension:", images.shape[1:]," reduced to dimension of ", images_red.shape[1:])
+    print("The external pixels have been removed")
+    return images_red    
 
 
 
-def fuse_pixels(images,fuse_x,fuse_y):
+def merge_pixels(images, merge_x, merge_y):
     
-    y_pxl_new = math.ceil(images.shape[1]/fuse_y)
-    x_pxl_new = math.ceil(images.shape[2]/fuse_x)
+    y_pxl_new = math.ceil(images.shape[1]/merge_y)
+    x_pxl_new = math.ceil(images.shape[2]/merge_x)
     
-    print(y_pxl_new,x_pxl_new)
-    images_f = np.zeros((images.shape[0],y_pxl_new,x_pxl_new))
-    print(images_f.shape)
+    images_merged = np.zeros((images.shape[0],y_pxl_new,x_pxl_new))
+ 
     for i in range(images.shape[0]): 
         for j in range(images.shape[1]): #y
             for h in range(images.shape[2]): # x
-                n_y_new = math.floor(j/fuse_y)
-                n_x_new = math.floor(h/fuse_x)
+                n_y_new = math.floor(j/merge_y)
+                n_x_new = math.floor(h/merge_x)
                 
-                images_f[i][n_y_new][n_x_new] = images_f[i][n_y_new][n_x_new] + images[i][j][h]
-    return images_f  
+                images_merged[i][n_y_new][n_x_new] = images_merged[i][n_y_new][n_x_new] + images[i][j][h]
+                
+    print("Images of dimension:", images.shape[1:]," reduced to dimension of ", images_merged.shape[1:])
+    print("The pixels have been merged in block of ", (merge_x, merge_y), " along the x, and y axes respectively")
+    return images_merged  
 
 
     
@@ -621,7 +863,7 @@ def normalize_image_data(images):
         print("Error: File given is made by black images (only zeros)")
     else: 
         if (img_max - img_min) > 0:
-            images = np.around( 255 * (images - img_min) / (img_max - img_min))
+            images = np.ceil( 255 * (images - img_min) / (img_max - img_min))
         else: 
             images = 0
             print("Error: File given is made by same values images, now it has been normalized to 1")
@@ -630,27 +872,73 @@ def normalize_image_data(images):
 
 
 
-def plot_images(images, plot_row=3, idx=0):
-
-    fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
-    for i in range(plot_row):
-        for j in range(2): 
-            my_pic=ax[i][j].imshow(images[idx],vmin=0, vmax=255, cmap='inferno')
-            if Labels[idx]>0.5:
-                ax[i][j].set_title("Image "+ str(idx) + ": Reaction Event")
-            else:
-                ax[i][j].set_title("Image "+ str(idx) + ": Beam Event")
+def get_xy_event(points, event_idx):
+    
+    x_event_List = []
+    y_event_List = []
+    
+    for j in range(len(points[event_idx])): # loop on event rows
+            x_event_List.append(points[event_idx][j][0]) 
+            y_event_List.append(points[event_idx][j][1])   
             
-            ax[i][j].set_xlabel("Pixel X")
-            ax[i][j].set_ylabel("Pixel Y")
+    xy_event = np.array(list(zip(x_event_List,y_event_List)))
+    
+    
+    return xy_event
+
+
+
+def plot_images(images, labels, free_range = 1, plot_row=3, idx=0):
+
+    if plot_row == 1:
+        fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
+        for j in range(2):
+            
+            if free_range == 1:
+                my_pic=ax[j].imshow(images[idx], cmap='inferno')
+                
+            else:
+                my_pic=ax[j].imshow(images[idx], vmin=0, vmax=255, cmap='inferno')   
+                
+            if labels[idx]>0.5:
+                ax[j].set_title("Image "+ str(idx) + ": Reaction Event")
+            else:
+                ax[j].set_title("Image "+ str(idx) + ": Beam Event")
+            
+            ax[j].set_xlabel("Pixel X")
+            ax[j].set_ylabel("Pixel Y")
         
 
             idx = idx +1
-            cbar = fig.colorbar(my_pic, ax= ax[i][j], extend='both')
+            cbar = fig.colorbar(my_pic, ax= ax[j], extend='both')
             cbar.minorticks_on()
+    else:    
+        fig, ax = plt.subplots(plot_row,2,figsize=(18, plot_row*7))
+        for i in range(plot_row):
+            for j in range(2):
+                
+                if free_range == 1:
+                    my_pic=ax[i][j].imshow(images[idx],  cmap='inferno')
+                else:
+                    my_pic=ax[i][j].imshow(images[idx], vmin=0, vmax=255, cmap='inferno') 
+                
+                if labels[idx]>0.5:
+                    ax[i][j].set_title("Image "+ str(idx) + ": Reaction Event")
+                else:
+                    ax[i][j].set_title("Image "+ str(idx) + ": Beam Event")
+            
+                ax[i][j].set_xlabel("Pixel X")
+                ax[i][j].set_ylabel("Pixel Y")
+        
 
-    fig.tight_layout() # adjust automatically spacing between sublots
+                idx = idx +1
+                cbar = fig.colorbar(my_pic, ax= ax[i][j], extend='both')
+                cbar.minorticks_on()
+
+    #fig.tight_layout() # adjust automatically spacing between sublots
     plt.show()
+    
+    
     
     
     
@@ -694,7 +982,16 @@ def build_pretrained_vgg_model(input_shape, num_classes):
 ###############     Function used in the section: Dimensionality Reduction Algorithms     ###############
 #########################################################################################################
 
-
+def plot_latent_space(X_train, Labels_train, DRA):
+    plt.figure(figsize=(9,6))
+    plt.scatter(X_train[Labels_train>0.5, 0], X_train[Labels_train>0.5, 1], c="blue", label='Reaction')
+    plt.scatter(X_train[Labels_train<0.5, 0], X_train[Labels_train<0.5, 1], c="red", label='Beam')
+    plt.title("Training set after " + DRA, fontsize=18)
+    plt.xlabel("$x_1$", fontsize=14)
+    plt.ylabel("$x_2$", fontsize=14, rotation=0)
+    plt.legend()
+    plt.show()
+    
     
 def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, contour=True):
     """Function taken from: https://github.com/ageron/handson-ml2/blob/master/07_ensemble_learning_and_random_forests.ipynb
@@ -894,33 +1191,53 @@ def make_2d_vis_autoencoder(xt,yt,Labels_train):
 
 
     #Make a figure with subplots
-    fig, ax = plt.subplots(3, figsize=(18, 24))
+    fig, ax = plt.subplots(3, figsize=(9, 18))
 
     plt.sca(ax[0])
     plot_decision_boundary(logreg_autoencoder, dataset, Labels_train)
     ax[0].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0].text(-1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[0].set_title("Logistic regression after Autoencoder", fontsize=18)
+    ax[0].set_title("Logistic regression after Encoder", fontsize=18)
 
     plt.sca(ax[1])
     plot_decision_boundary(RFC_autoencoder, dataset, Labels_train)
     ax[1].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1].text(1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[1].set_title("Random forest after Autoencoder", fontsize=18)
+    ax[1].set_title("Random forest after Encoder", fontsize=18)
 
     plt.sca(ax[2])
     plot_decision_boundary(SVM_autoencoder, dataset, Labels_train)
     ax[2].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2].text(-0.5, 0.7, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[2].set_title("Support vector machine after Autoencoder", fontsize=18)
+    ax[2].set_title("Support vector machine after Encoder", fontsize=18)
 
         
-def plot_encoder_net(x,y):
+def plot_encoder_net(x,y, labels):
+    
+    x0 = []
+    y0 = []
+    
+    x1 = []
+    y1 = []
+    
+    for xx,yy,ll in zip(x,y,labels):
+        
+        if(ll == 0):
+            
+            x0.append(xx)
+            y0.append(yy)
+        else:
+            
+            x1.append(xx)
+            y1.append(yy)
     
     fig, ax = plt.subplots(figsize=(9, 6))
     plt.title("Training Set Latent representation", fontsize=20)
-
-    plt.scatter(x, y, c = 'black')
+    
+    plt.scatter(x1, y1, c = 'blue', label='reaction')
+    plt.scatter(x0, y0, c = 'red', label='beam')
+    
+    
 
     plt.xlabel('X Latent Space', fontsize=18)
     ax.set_xticks(np.arange(-1,1,0.2))
@@ -931,6 +1248,9 @@ def plot_encoder_net(x,y):
     ax.set_ylim(-1,+1)
 
     fig.tight_layout()
+    plt.legend(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     plt.show()
     
 def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
@@ -965,7 +1285,7 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
                 p_beam_y.append(p[0][1])
 
     
-    fig, ax = plt.subplots(figsize=(12, 9))
+    fig, ax = plt.subplots(figsize=(9, 6))
     plt.title(title, fontsize=20);
 
     # Plotting dots : color is true label
@@ -982,11 +1302,11 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
 
 
     plt.xlabel('X Latent Space', fontsize=18)
-    ax.set_xticks(np.arange(-1,1,0.2))
+    ax.set_xticks(np.arange(-1,1.1,0.2))
     ax.set_xlim(-1,+1)
 
     plt.ylabel('Y Latent Space', fontsize=18)
-    ax.set_yticks(np.arange(-1,1,0.2))
+    ax.set_yticks(np.arange(-1,1.1,0.2))
     ax.set_ylim(-1,+1)
 
     plt.legend(fontsize=20);
@@ -995,3 +1315,28 @@ def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
 
     fig.tight_layout()
     plt.show()
+    
+def get_predictor(classifier_type, xtrain, labels):
+    
+    if classifier_type == 'LR':
+        
+        from sklearn.linear_model import LogisticRegression
+        
+        logreg = LogisticRegression()
+        logreg.fit(xtrain, labels)
+        return logreg
+    
+            
+    elif classifier_type == 'RF':
+        
+        from sklearn.ensemble import RandomForestClassifier
+        RFC_pred = RandomForestClassifier()
+        RFC_pred.fit(xtrain, labels)
+        return RFC_pred
+    
+    elif classifier_type == 'SVM':
+        
+        from sklearn import svm
+        SVM_pred = svm.SVC()
+        SVM_pred.fit(xtrain, labels)
+        return SVM_pred
