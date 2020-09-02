@@ -1320,6 +1320,8 @@ def plot_decision_boundary(clf, X, y, axes=[-1.5, 2.45, -1, 1.5], alpha=0.5, con
     plt.xlabel(r"$x_1$", fontsize=18)
     plt.ylabel(r"$x_2$", fontsize=18, rotation=0)
 
+    
+    
 def make_2d_vis(X_train_PCA, X_train_TSNE, Labels_train):
     
     """
@@ -1387,7 +1389,7 @@ def make_2d_vis(X_train_PCA, X_train_TSNE, Labels_train):
     plot_decision_boundary(logreg_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     ax[0][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[0][0].set_title("Logistic regression after PCA", fontsize=18)
+    ax[0][0].set_title("Logistic Regression after PCA", fontsize=18)
 
     
    
@@ -1395,32 +1397,32 @@ def make_2d_vis(X_train_PCA, X_train_TSNE, Labels_train):
     plot_decision_boundary(logreg_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     ax[0][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[0][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[0][1].set_title("Logistic regression after t-SNE", fontsize=18)
+    ax[0][1].set_title("Logistic Regression after t-SNE", fontsize=18)
 
     
     plt.sca(ax[1][0])
     plot_decision_boundary(RFC_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     ax[1][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[1][0].set_title("Random forest after PCA", fontsize=18)
+    ax[1][0].set_title("Random Forest after PCA", fontsize=18)
                            
     plt.sca(ax[1][1])
     plot_decision_boundary(RFC_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     ax[1][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[1][1].set_title("Random forest after t-SNE", fontsize=18)
+    ax[1][1].set_title("Random Forest after t-SNE", fontsize=18)
     
     plt.sca(ax[2][0])
     plot_decision_boundary(SVM_PCA, X_train_PCA, Labels_train, axes=[-3.1,5.2,-4,6])
     ax[2][0].text(4, 3, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2][0].text(-2, 1.8, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[2][0].set_title("Support vector machine after PCA", fontsize=18)
+    ax[2][0].set_title("Support Vector Machine after PCA", fontsize=18)
                            
     plt.sca(ax[2][1])
     plot_decision_boundary(SVM_TSNE, X_train_TSNE, Labels_train, axes=[-60,60,-50,60])
     ax[2][1].text(40, 45, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[2][1].text(-40, 20, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[2][1].set_title("Support vector machine after t-SNE", fontsize=18)
+    ax[2][1].set_title("Support Vector Machine after t-SNE", fontsize=18)
     
     #KMeans does not work properly
     #plt.sca(ax[3][0])
@@ -1440,121 +1442,70 @@ def make_2d_vis(X_train_PCA, X_train_TSNE, Labels_train):
      #       color='k', zorder=11, alpha=1)
     
 
-def make_2d_vis_autoencoder(xt,yt,Labels_train):
+def make_2d_vis_autoencoder(X_train_ECD, Labels_train):
     
     """
     Description:
-        This function creates the visualizations of trained model on the 2d autoencoder reduced dataset.
+        This function creates the visualizations of trained model on the 2d autoencoder reduced space.
         Adapted from: https://github.com/ageron/handson-ml2
     
     Arguments:
-        xt : x of latent space (with encoded)
-        yt : y of latent space (with encoded)
+        X_train_ECD : ECD features of training set.
         Labels_train : training labels
         
     Returns:
         None.
     """
-    
-    dataset = []
 
-    for x,y in zip(xt,yt):
-
-        dataset.append(np.array([x,y]))
-
-    dataset = np.array(dataset)
-
-
-    import matplotlib.pyplot as plt
     #First we fit the models
     from sklearn.linear_model import LogisticRegression
    
     logreg_autoencoder = LogisticRegression()
-    logreg_autoencoder.fit(dataset, Labels_train)
-    LR_pred_train_autoencoder = logreg_autoencoder.predict(dataset)
+    logreg_autoencoder.fit(X_train_ECD, Labels_train)
+    LR_pred_train_autoencoder = logreg_autoencoder.predict(X_train_ECD)
 
     from sklearn.ensemble import RandomForestClassifier
 
     RFC_autoencoder = RandomForestClassifier()
-    RFC_autoencoder.fit(dataset, Labels_train)
-    RFC_pred_train_autoencoder = RFC_autoencoder.predict(dataset)
+    RFC_autoencoder.fit(X_train_ECD, Labels_train)
+    RFC_pred_train_autoencoder = RFC_autoencoder.predict(X_train_ECD)
 
     from sklearn.cluster import KMeans
 
     KM2_autoencoder = KMeans(n_clusters=2)
-    KM2_autoencoder.fit(dataset)
-    KM2_pred_train_autoencoder = KM2_autoencoder.predict(dataset)
+    KM2_autoencoder.fit(X_train_ECD)
+    KM2_pred_train_autoencoder = KM2_autoencoder.predict(X_train_ECD)
 
     from sklearn import svm
 
     SVM_autoencoder = svm.SVC()
-    SVM_autoencoder.fit(dataset, Labels_train)
-    SVM_pred_train_autoencoder = SVM_autoencoder.predict(dataset)
+    SVM_autoencoder.fit(X_train_ECD, Labels_train)
+    SVM_pred_train_autoencoder = SVM_autoencoder.predict(X_train_ECD)
 
 
     #Make a figure with subplots
     fig, ax = plt.subplots(3, figsize=(9, 18))
 
     plt.sca(ax[0])
-    plot_decision_boundary(logreg_autoencoder, dataset, Labels_train)
-    ax[0].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
-    ax[0].text(-1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[0].set_title("Logistic regression after Encoder", fontsize=18)
+    plot_decision_boundary(logreg_autoencoder, X_train_ECD, Labels_train)
+    ax[0].text(-1, 1, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[0].text(1, -0.5, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[0].set_title("Logistic Regression after Encoder", fontsize=18)
 
     plt.sca(ax[1])
-    plot_decision_boundary(RFC_autoencoder, dataset, Labels_train)
-    ax[1].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
-    ax[1].text(1, 1, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[1].set_title("Random forest after Encoder", fontsize=18)
+    plot_decision_boundary(RFC_autoencoder, X_train_ECD, Labels_train)
+    ax[1].text(1, 1, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[1].text(1, -0.5, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[1].set_title("Random Forest after Encoder", fontsize=18)
 
     plt.sca(ax[2])
-    plot_decision_boundary(SVM_autoencoder, dataset, Labels_train)
-    ax[2].text(1, -0.5, "Reaction Events", fontsize=14, color="b", ha="center")
-    ax[2].text(-0.5, 0.7, "Beam Events", fontsize=14, color="orange", ha="center")
-    ax[2].set_title("Support vector machine after Encoder", fontsize=18)
+    plot_decision_boundary(SVM_autoencoder, X_train_ECD, Labels_train)
+    ax[2].text(-0.5, 0.7, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[2].text(1, -0.5, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[2].set_title("Support Vector Machine after Encoder", fontsize=18)
 
         
-def plot_encoder_net(x,y, labels):
-    
-    x0 = []
-    y0 = []
-    
-    x1 = []
-    y1 = []
-    
-    for xx,yy,ll in zip(x,y,labels):
-        
-        if(ll == 0):
-            
-            x0.append(xx)
-            y0.append(yy)
-        else:
-            
-            x1.append(xx)
-            y1.append(yy)
-    
-    fig, ax = plt.subplots(figsize=(9, 6))
-    plt.title("Training Set Latent representation", fontsize=20)
-    
-    plt.scatter(x1, y1, c = 'blue', label='reaction')
-    plt.scatter(x0, y0, c = 'red', label='beam')
-    
-    
 
-    plt.xlabel('X Latent Space', fontsize=18)
-    ax.set_xticks(np.arange(-1,1,0.2))
-    ax.set_xlim(-1,+1)
-
-    plt.ylabel('Y Latent Space', fontsize=18)
-    ax.set_yticks(np.arange(-1,1,0.2))
-    ax.set_ylim(-1,+1)
-
-    fig.tight_layout()
-    plt.legend(fontsize=20)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.show()
-    
 def plot_kmeans_clustering(encoder_pred, Labels_train, clusters, assoc, title):
     
     """
