@@ -85,8 +85,8 @@ def load_data(hf):
 
 ###########################################################################################################################
 ###############     Data Exploration Section                                                                ###############     
-###############     Functions dedicated at the second part of the report:                                   ###############
-###############     Data-visualization, Features definition and visualizaion                                ###############
+###############     Functions relative to the second part of the report:                                    ###############
+###############     Data-visualization, Feature Selection and Visualization                                 ###############
 ###########################################################################################################################
 
 def plot_3d_event(DataList, Labels, idx):
@@ -132,7 +132,7 @@ def plot_3d_events(DataList, Labels, idx = 0):
     
     """
     Description:
-        This function plots 12 =(3 rows, and 4 columns) events in a 3d plot with x,y,z for each pad fired.
+        This function plots 12 (3 rows, and 4 columns) events in a 3d plot with x,y,z for each pad fired.
     
     Arguments:
         DataList: Data list containing the events.
@@ -173,7 +173,7 @@ def plot_3d_events(DataList, Labels, idx = 0):
     plt.show()
 
     
-def plot_2d_events(DataList, Labels , idx = 0):
+def plot_2d_events(DataList, Labels, idx = 0):
 
     """
     Description:
@@ -552,8 +552,8 @@ def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax,
     
 ###########################################################################################################################
 ###############     Model Performances                                                                      ###############     
-###############     Functions dedicated at the visualization/claculations of the model parformances         ###############
-###############     Used in the section: Machine Learning                                                   ###############
+###############     Functions relative to the visualization/claculations of the model parformances:         ###############
+###############     used throughout all the Machine Learning section                                        ###############
 ###########################################################################################################################
 
 
@@ -561,14 +561,14 @@ def make_nn_plots(history, min_acc = 0.95):
     
     """
     Description:
-    This function prints performance of a neural network per epoch (model loss & accuracy)
+    This function prints performance of a neural network per epoch (model loss & accuracy).
     
     Arguments:
-        history: history object obtained when fitting a tensorflow neural network
-        min_acc: set min axis value for accuracy. By default the plot has y_min=0.95
+        history: history object obtained when fitting a tensorflow neural network.
+        min_acc: set min value for accuracy to plot. By default the plot has y_min=0.95
         
     Returns:
-        None
+        None.
     """
     
     
