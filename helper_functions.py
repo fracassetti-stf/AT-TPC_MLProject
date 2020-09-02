@@ -18,8 +18,8 @@ layers = tf.keras.layers
 
 ###########################################################################################################################
 ###############     Data Import Section                                                                     ###############     
-###############     Functions dedicated at the first part of the report :                                   ###############
-###############     data import, and data pre-processing.                                                   ###############
+###############     Functions relative to the first part of the report :                                    ###############
+###############     Data import, and Data Preprocessing.                                                    ###############
 ###########################################################################################################################
 
 def load_data(hf):
@@ -74,7 +74,7 @@ def load_data(hf):
     Labels = np.array(LabelsList)
 
     print("Dataset contains " + str(len(AllDataList)) + " events")
-    print("Data contains %i empty events, of indexes:"  % len(EmptyDataList),  EmptyDataList)
+    print("Data contains %i empty events, at index numbers:"  % len(EmptyDataList),  EmptyDataList)
     print("")
     print("Dataset contains " + str(len(DataList)) + " non-empty events:")
     print(str(beam) + " Beam Events, and " + str(reaction) + " Reaction Events\n")
@@ -352,30 +352,33 @@ def plot_features_hist(train_r_idx, r_color, train_b_idx, b_color, PadsPerEvent,
 
     #mannualy set number of bins for both two histgrams and make the bin widths equal to each other
 
-    bins1=np.histogram(np.hstack((PadsPerEvent[train_r_idx],PadsPerEvent[train_b_idx])), bins=10)[1]
-    bins2=np.histogram(np.hstack((SumAPerEvent[train_r_idx],SumAPerEvent[train_b_idx])), bins=10)[1]
-    bins3=np.histogram(np.hstack((FracClosePtsPerEvent[train_r_idx],FracClosePtsPerEvent[train_b_idx])), bins=10)[1]
+    bins1=np.histogram(np.hstack((PadsPerEvent[train_r_idx],PadsPerEvent[train_b_idx])), bins=15)[1]
+    bins2=np.histogram(np.hstack((SumAPerEvent[train_r_idx],SumAPerEvent[train_b_idx])), bins=15)[1]
+    bins3=np.histogram(np.hstack((FracClosePtsPerEvent[train_r_idx],FracClosePtsPerEvent[train_b_idx])), bins=15)[1]
 
     ax[0].hist(PadsPerEvent[train_r_idx],bins=bins1, color = r_color, label = 'Reaction', histtype = 'step')
     ax[0].hist(PadsPerEvent[train_b_idx],bins=bins1, color = b_color, label = 'Beam', histtype = 'step')
     ax[0].set_title("Active Pads Histogram")
-    ax[0].set_xlabel("Number of Pads")
-    ax[0].set_ylabel("Counts")
+    ax[0].set_xlabel("Number of Active Pads")
+    ax[0].set_ylabel("Counts [log]")
+    ax[0].set_yscale('log')
     ax[0].legend()
 
     ax[1].hist(SumAPerEvent[train_r_idx],bins=bins2, color = r_color, label = 'Reaction', histtype = 'step')
     ax[1].hist(SumAPerEvent[train_b_idx],bins=bins2, color = b_color, label = 'Beam', histtype = 'step')
     ax[1].set_title("Charge Deposition Histogram")
-    ax[1].set_xlabel("Total Charge")
-    ax[1].set_ylabel("Counts")
+    ax[1].set_xlabel("Total Deposited Charge")
+    ax[1].set_ylabel("Counts [log]")
+    ax[1].set_yscale('log')
     ax[1].legend()
 
     ax[2].hist(FracClosePtsPerEvent[train_r_idx],bins=bins3, color = r_color, label = 'Reaction', histtype = 'step')
     ax[2].hist(FracClosePtsPerEvent[train_b_idx],bins=bins3,color = b_color, label = 'Beam', histtype = 'step')
     ax[2].set_title("Fraction of Close Pads Histogram")
     ax[2].set_xlabel("Fraction of Close Pads")
-    ax[2].set_ylabel("Counts")
-    ax[2].legend(loc='upper left')
+    ax[2].set_ylabel("Counts [log]")
+    ax[2].set_yscale('log')
+    ax[2].legend(loc='upper center')
 
     fig.tight_layout() # adjust automatically spacing between sublots
     plt.show()
@@ -413,45 +416,45 @@ def plot_features_scatter(train_r_idx, r_color, train_b_idx, b_color, MeanXPerEv
     # Mean values
     ax[0][0].scatter(MeanXPerEvent[train_r_idx],MeanYPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[0][0].scatter(MeanXPerEvent[train_b_idx],MeanYPerEvent[train_b_idx], c = b_color)
-    ax[0][0].set_title("Mean X vs Mean Y")
-    ax[0][0].set_xlabel(" Mean X")
-    ax[0][0].set_ylabel("Mean Y")
+    ax[0][0].set_title("Mean(X) vs Mean(Y)")
+    ax[0][0].set_xlabel("Mean(X)")
+    ax[0][0].set_ylabel("Mean(Y)")
     ax[0][0].legend(handles=legend_elements)
 
     ax[0][1].scatter(MeanXPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color,  alpha=0.8)
     ax[0][1].scatter(MeanXPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
-    ax[0][1].set_title("Mean X vs Mean Z")
-    ax[0][1].set_xlabel("Mean X")
-    ax[0][1].set_ylabel("Mean Z")
+    ax[0][1].set_title("Mean(X) vs Mean(Z)")
+    ax[0][1].set_xlabel("Mean(X)")
+    ax[0][1].set_ylabel("Mean(Z)")
     ax[0][1].legend(handles=legend_elements)
 
     ax[0][2].scatter(MeanYPerEvent[train_r_idx],MeanZPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[0][2].scatter(MeanYPerEvent[train_b_idx],MeanZPerEvent[train_b_idx], c = b_color)
-    ax[0][2].set_title("Mean Y vs Mean Z")
-    ax[0][2].set_xlabel("Mean Y")
-    ax[0][2].set_ylabel("Mean Z")
+    ax[0][2].set_title("Mean(Y) vs Mean(Z)")
+    ax[0][2].set_xlabel("Mean(Y)")
+    ax[0][2].set_ylabel("Mean(Z)")
     ax[0][2].legend(handles=legend_elements)
 
     # Standard Deviations
     ax[1][0].scatter(StDevXPerEvent[train_r_idx],StDevYPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[1][0].scatter(StDevXPerEvent[train_b_idx],StDevYPerEvent[train_b_idx], c = b_color)
-    ax[1][0].set_title("stdev(X) vs stdev(Y)")
-    ax[1][0].set_xlabel("stdev(X)")
-    ax[1][0].set_ylabel("stdev(Y)")
+    ax[1][0].set_title("StDev(X) vs StDev(Y)")
+    ax[1][0].set_xlabel("StDev(X)")
+    ax[1][0].set_ylabel("StDev(Y)")
     ax[1][0].legend(handles=legend_elements)
 
     ax[1][1].scatter(StDevXPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[1][1].scatter(StDevXPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
-    ax[1][1].set_title("stdev(X) vs stdev(Z)")
-    ax[1][1].set_xlabel("stdev(X)")
-    ax[1][1].set_ylabel("stdev(Z)")
+    ax[1][1].set_title("StDev(X) vs StDev(Z)")
+    ax[1][1].set_xlabel("StDev(X)")
+    ax[1][1].set_ylabel("StDev(Z)")
     ax[1][1].legend(handles=legend_elements)
 
     ax[1][2].scatter(StDevYPerEvent[train_r_idx],StDevZPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[1][2].scatter(StDevYPerEvent[train_b_idx],StDevZPerEvent[train_b_idx], c = b_color)
-    ax[1][2].set_title("stdev(Y) vs stdev(Z)")
-    ax[1][2].set_xlabel("stdev(Y)")
-    ax[1][2].set_ylabel("stdev(Z)")
+    ax[1][2].set_title("StDev(Y) vs StDev(Z)")
+    ax[1][2].set_xlabel("StDev(Y)")
+    ax[1][2].set_ylabel("StDev(Z)")
     ax[1][2].legend(handles=legend_elements)
 
     fig.tight_layout()
@@ -487,16 +490,16 @@ def plot_features_scatter2(train_r_idx, r_color, train_b_idx, b_color, StDevZPer
 
     ax[0].scatter(StDevZPerEvent[train_r_idx],FracClosePtsPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[0].scatter(StDevZPerEvent[train_b_idx],FracClosePtsPerEvent[train_b_idx], c = b_color)
-    ax[0].set_title("stdev(Z) vs Fraction of Close Pads")
-    ax[0].set_xlabel("stdev(Z)")
+    ax[0].set_title("StDev(Z) vs Fraction of Close Pads")
+    ax[0].set_xlabel("StDev(Z)")
     ax[0].set_ylabel("Fraction of Close Pads")
     ax[0].legend(handles=legend_elements)
 
     ax[1].scatter(PadsPerEvent[train_r_idx],SumAPerEvent[train_r_idx], c = r_color, alpha=0.8)
     ax[1].scatter(PadsPerEvent[train_b_idx],SumAPerEvent[train_b_idx], c = b_color)
     ax[1].set_title("Number of Pads vs Total Charge")
-    ax[1].set_xlabel("Number of Pads")
-    ax[1].set_ylabel("Total Charge")
+    ax[1].set_xlabel("Number of Active Pads")
+    ax[1].set_ylabel("Total Deposited Charge")
     ax[1].legend(handles=legend_elements)
 
     fig.tight_layout()
@@ -528,19 +531,19 @@ def plot_beam_outliers(DataList, Labels, train_b_idx, StDevXPerEvent, StDevXMax,
     large_pads = train_b_idx[PadsPerEvent[train_b_idx] > PadsMax]  
     small_frac_close = train_b_idx[FracClosePtsPerEvent[train_b_idx] < FCPMin] 
     
-    print("Outliers using current criteria:")
+    print("Searching for outliers using following criteria:")
     print("stdev(X) > ", StDevXMax, " cm      :", np.sort(large_x_stdev))
     print("Number of Pads > ", PadsMax, " :", np.sort(large_pads))
     print("FCP < ", FCPMin, "            :", np.sort(small_frac_close))
 
     # Outliers that responde to (at least) one criterion 
     outliers = np.union1d(np.union1d(large_x_stdev, large_pads),small_frac_close)
-    print("Outliers that satisfy at least one criterion:", outliers)
+    print("List of outliers that satisfy at least one criterion:", outliers)
     print("\n")
 
     # Plotting Outliers
     for i in range(len(outliers)):
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>> Outliers: ", outliers[i], "<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>> Outlier: ", outliers[i], "<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         print("stdev(X)       : ", round(StDevXPerEvent[outliers[i]],3))
         print("Number of Pads : ", int(PadsPerEvent[outliers[i]]))
         print("FCP            :  {:.2f}".format(FracClosePtsPerEvent[outliers[i]]*100) + "%")
