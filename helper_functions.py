@@ -561,7 +561,7 @@ def make_nn_plots(history, min_acc = 0.95):
     
     """
     Description:
-    This function prints performance of a neural network per epoch (model loss & accuracy).
+    This function prints the performance of a neural network per epoch (model loss & accuracy).
     
     Arguments:
         history: history object obtained when fitting a tensorflow neural network.
@@ -569,15 +569,13 @@ def make_nn_plots(history, min_acc = 0.95):
         
     Returns:
         None.
-    """
-    
-    
+    """ 
     
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
     
     num_epochs = len(history.history['loss'])
     
-    # avoid plotting every epochs ticks (e.g. in autoencoders num_epochs is definitely too  high)
+    # Avoid plotting too many epochs ticks.
     max_x_ticks = 10 
     if num_epochs > max_x_ticks: 
         x_step = math.floor(num_epochs / max_x_ticks)
@@ -613,6 +611,7 @@ def make_nn_plots(history, min_acc = 0.95):
     
     
     
+    
 def plot_confusion_matrix(y_true, y_pred, classes, title=None, cmap=plt.cm.Blues):
     
     """
@@ -632,7 +631,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, title=None, cmap=plt.cm.Blues
     """
     
     if not title:
-        title = 'Confusion matrix'
+        title = 'Confusion Matrix'
 
     # Compute confusion matrix
     cm = confusion_matrix(y_true, y_pred)
@@ -646,8 +645,8 @@ def plot_confusion_matrix(y_true, y_pred, classes, title=None, cmap=plt.cm.Blues
            # ... and label them with the respective list entries
            xticklabels=classes, yticklabels=classes,
            title=title,
-           ylabel='True label',
-           xlabel='Predicted label')
+           ylabel='True Labels',
+           xlabel='Predicted Labels')
 
     # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
@@ -665,7 +664,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, title=None, cmap=plt.cm.Blues
     
 
     
-def print_model_performance(labels, predictions, title = "INPUT SET TYPE"):
+def print_model_performance(Labels, Predictions, title = "INPUT SET TYPE"):
     
     """
     Description: 
@@ -673,20 +672,20 @@ def print_model_performance(labels, predictions, title = "INPUT SET TYPE"):
         f1-score and mathews correlation coefficient.
     
     Arguments:
-        dataset = DataList (unless you create different list)
-        labels = Labels (used for setting beam or reaction in title)
+        Labels = Labels (used for setting beam or reaction in title)
+        Prediction = Predicted labels (by the model you want to evaluate the performances)
         idx = index of event in dataset
     
     Returns:
         None
     """
     
-    accuracy = accuracy_score(labels, predictions)
-    precision = precision_score(labels, predictions)
-    recall = recall_score(labels, predictions)
-    confmat = confusion_matrix(labels, predictions)
-    f1 = f1_score(labels, predictions)
-    mcc = matthews_corrcoef(labels, predictions)
+    accuracy = accuracy_score(Labels, Predictions)
+    precision = precision_score(Labels, Predictions)
+    recall = recall_score(Labels, Predictions)
+    confmat = confusion_matrix(Labels, Predictions)
+    f1 = f1_score(Labels, Predictions)
+    mcc = matthews_corrcoef(Labels, Predictions)
     
     print("Model performance for %s set:" %title)
     print("--------------------------------------------------------")
@@ -695,7 +694,7 @@ def print_model_performance(labels, predictions, title = "INPUT SET TYPE"):
     print("Recall    : {:.2f}".format(recall*100) + "%")
     print("F1-score  : {:.4f}".format(f1))
     print("MCC       : {:.4f}".format(mcc))
-    plot_confusion_matrix(labels, predictions, ["beam","reaction"])
+    plot_confusion_matrix(Labels, Predictions, ["Beam","Reaction"])
     print()
     
     
