@@ -1494,14 +1494,14 @@ def make_2d_vis_autoencoder(X_train_ECD, Labels_train):
 
     plt.sca(ax[1])
     plot_decision_boundary(RFC_autoencoder, X_train_ECD, Labels_train)
-    ax[1].text(1, 1, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[1].text(-1, 1, "Reaction Events", fontsize=14, color="b", ha="center")
     ax[1].text(1, -0.5, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[1].set_title("Random Forest after Encoder", fontsize=18)
 
     plt.sca(ax[2])
     plot_decision_boundary(SVM_autoencoder, X_train_ECD, Labels_train)
-    ax[2].text(-0.5, 0.7, "Reaction Events", fontsize=14, color="b", ha="center")
-    ax[2].text(1, -0.5, "Beam Events", fontsize=14, color="orange", ha="center")
+    ax[2].text(-1, 1, "Reaction Events", fontsize=14, color="b", ha="center")
+    ax[2].text(1.5, -0.5, "Beam Events", fontsize=14, color="orange", ha="center")
     ax[2].set_title("Support Vector Machine after Encoder", fontsize=18)
 
         
