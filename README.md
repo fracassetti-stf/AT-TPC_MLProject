@@ -18,23 +18,27 @@ This session describes what this project is meant to look like, and our final go
 
 ## 1) Recent updates on the work: (please indicate the date and your name) 
 
-### 2020_09_01 SF : Adding Description to helper_functions and Report updates
-I added a description to avery function in helper_function.py.
-Report updates: added some comments to feature plots, added first part of conclusions.
+### 2020_09_02_SF: Revision of the Project Completed   
+Finilized the project revision, checked for consistency of varialbe names, and conclusions added.    
 
 
-### 2020_08_31 SF : AT-TPC_Report Complete
-The Final report is complete and running in every part. Every model gives very good results (at least 98%). 
+### 2020_09_01 SF : Adding Description to helper_functions and Report updates  
+I added a description to avery function in helper_function.py.  
+Report updates: added some comments to feature plots, added first part of conclusions.  
+
+
+### 2020_08_31 SF : AT-TPC_Report Complete  
+The Final report is complete and running in every part. Every model gives very good results (at least 98%).  
 It still need revision in some parts.   
 
-### 2020_08_30 SF : AT-TPC_Report
+### 2020_08_30 SF : AT-TPC_Report  
 I started merging the different file in order to produce the final report. I started from the first part (revised by HS), I spent most of the time on revising the this part, up to "Selecting Features". Many modifications were necessary. I changed some plots, and added functions in helper, and adeed comments. Then, I merged into the report the first models revised by Andreas. CNN and Dimensionality Reduction algorithms need still to be added.
 
-### 2020_08_29 SF : CNN Finished, updated CNN helper_functions.py  
+### 2020_08_29 SF : CNN Finished, updated CNN helper_functions.py   
 CNN need some revision, but the algorithm is working.  
 Tomorrow I will finish revising CNN, and I will create the final report file: SFprojectfile/AT-TPC_Report.ipynb.  
 
-### 2020_08_28 SF : Working on CNN, and updating helper_functions.py
+### 2020_08_28 SF : Working on CNN, and updating helper_functions.py  
 I worked on the CNN algorithms, I have created different functions in order to convert the data in images, manipulate images, and plotting. The results have improved.  
 
 I have updated the helper_functions.py, using the one of Andreas, and integrating mine(CNN), and the ones that Luca created (Autoencoder algorithm). The file is in my branch: SFprojectfile/helper_functions.py. I also divided the functions in sections, so that it is more organised. I still need to modify some function related to CNN.  
