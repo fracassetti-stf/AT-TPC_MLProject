@@ -933,19 +933,19 @@ def show_grid(xy_values, x_lim, y_lim, x_spc, y_spc, x_shift=0, y_shift=0):
     print("----------------------------------")
     print("X grid spacing: ", x_spc)
     print("First x cell limits: ", (x_shift, x_spc+x_shift))
-    print("Number of pixel on x direction: %i*2 = "%(x_pxl/2), x_pxl)
+    print("Number of pixels in the x direction: %i*2 = "%(x_pxl/2), x_pxl)
     print("")
     # Y information
     print("Y-direction:")
     print("----------------------------------")
-    print("X grid spacing: ", y_spc)
+    print("Y grid spacing: ", y_spc)
     print("First y cell limits: ", (y_shift, y_spc+y_shift))
-    print("Number of pixel in y direction: %i*2 = "%(y_pxl/2), y_pxl)
+    print("Number of pixels in the y direction: %i*2 = "%(y_pxl/2), y_pxl)
 
     
     # Using Pad Grid (Grid used in converting in picture)
     fig, ax = plt.subplots(figsize=(8, 8))
-    ax.set_title("Pixel Grid")
+    ax.set_title("Pixels Grid")
     ax.scatter(xy_values[:,0],xy_values[:,1], c = "black", alpha=0.8)
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
@@ -994,7 +994,9 @@ def generate_images(points, pixel_values, x_lim, y_lim, x_spc, y_spc, x_shift, y
             n_x = math.floor((points[i][j][0]-y_shift)/x_spc) + round(x_pxl/2) # calculate which x image pixel fired
    
             images[i,n_y,n_x] =  images[i,n_y,n_x] + pixel_values[i][j]
-    print("The images generated have a dimension :", (y_pxl, x_pxl))
+    
+    print("The images generated have dimension: ", (y_pxl, x_pxl))
+    print("")
     
     return images 
 
@@ -1028,8 +1030,10 @@ def reduce_images_dim(images, dim):
                 x_idx = round(images.shape[2]/2)-round(dim/2) +h
                 images_red[i,j,h] =  images[i, y_idx, x_idx]
                 
-    print("Images of dimension:", images.shape[1:]," reduced to dimension of ", images_red.shape[1:])
-    print("The external pixels have been removed")
+    print("The input images of dimension: ", images.shape[1:]," have been reduced to a dimension of ", images_red.shape[1:])
+    print("The external pixels have been removed.")
+    print("")
+    
     return images_red    
 
 
@@ -1064,8 +1068,10 @@ def merge_pixels(images, merge_x, merge_y):
                 
                 images_merged[i][n_y_new][n_x_new] = images_merged[i][n_y_new][n_x_new] + images[i][j][h]
                 
-    print("Images of dimension:", images.shape[1:]," reduced to dimension of ", images_merged.shape[1:])
-    print("The pixels have been merged in block of ", (merge_x, merge_y), " along the x, and y axes respectively")
+    print("The input images of dimension: ", images.shape[1:]," have been reduced to a dimension of ", images_merged.shape[1:])
+    print("The pixels have been merged in block of ", (merge_x, merge_y), " along the x, and y axes, respectively.")
+    print("")
+    
     return images_merged  
 
 
@@ -1086,7 +1092,7 @@ def normalize_image_data(images):
     
     img_max = np.amax(images)
     img_min = np.amin(images)
-    #Debug 
+    #Remove comment signs for debug
     #print('While executing "normalize_image_data":')
     #print("The max value of images is: ", img_max, " while the minimum is: ", img_min)
     if img_max==0:
@@ -1130,7 +1136,7 @@ def get_xy_event(points, event_idx):
 
 
 
-def plot_images(images, Labels, free_range = 1, plot_row=3, idx=0):
+def plot_images(images, Labels, free_range = 0, plot_row=3, idx=0):
 
     """
     Description:
