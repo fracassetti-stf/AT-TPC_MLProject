@@ -1,6 +1,16 @@
-# AT-TPC Project  
-Collaborators (order is not relevant): 
-Andreas Ceulemans(AC), Stefano Fracassetti(SF), Ahmed Youssef(AY), Haoran Sun(HS) and Luca Morselli(LM)
+# AT-TPC Project   
+Collaborators (alphabetical order):   
+Andreas Ceulemans(AC), Stefano Fracassetti(SF),  Luca Morselli(LM), Haoran Sun(HS), and Ahmed Youssef(AY).   
+
+
+## Folder Content:   
+- AT_Project_Specifications: Project specifications.  
+- AT-TPC_Report.ipynb : Final Report.  
+- helper_functions.py: list of functions used in the report.  
+- DataFiles: folder containing the dataset.  
+- img: folder containing the pictures used throughout the report.  
+
+
 
 # Table of contents:
 ## 1) Recent updates on the work: 
@@ -86,13 +96,13 @@ Maybe some of this is obvious to some of you, but not everyone has use Git exten
 
 ## 3) Important information on the project  
 AT-TPC Final Project - TALENT School on Machine learning  
-Deadline: 31/08/2020  
+Deadline: 31/08/2020  (2 extra days have been asked for revison)
 
 What is expected from us?  
 Out goal is to deliver a report in which we perform the desired task, as indicated in the project assgined.
 The report (computational project = jupyter notebook) would go through every step of out analysis and describe what we did and how,  
-possible it would be nice to add extra information, or brief description on the model used. It would be a nice way in order to review this concept, and to explain your colleagues what you did, if they are not very familiar with it.  
+possible it would be nice to add extra information, or brief description on the model used. It would be a nice way in order to review the concepts, and to explain your colleagues what you did, if they are not very familiar with it.  
 
-AT-TPC_Report: This file will be the final report. In the end, it should be run independently, and be more accurate as possible in describing our work.
+AT-TPC_Report: This file will be the final report. In the end, it should be run independently (apart helper_functions.py), and be more accurate as possible in describing our work.
 
-The idea is that one perform taks in the Project file, he/she tests it, and only when it works just fine, he/she import the code in the report, where he/she adds extra information, and produce better outputs. 
+The idea is that first one perform taks in a Project file, he/she tests it, and only when it works just fine, he/she import the code in the report, adding extra information, and producing better outputs. 
