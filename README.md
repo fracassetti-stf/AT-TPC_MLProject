@@ -12,14 +12,14 @@ Andreas Ceulemans(AC), Stefano Fracassetti(SF),  Luca Morselli(LM), Haoran Sun(H
 
 
 
-# Table of contents:
-## 1) Recent updates on the work: 
+## Table of contents:  
+### 1) Recent updates on the work: 
 This session provides the latest information on the work done. If you do something on your branch worth sharing, use this session! Conversely, if you need to consult what your colleagues have recentrly done, look at this session!  
 
-## 2) Work Organization:  
+### 2) Work Organization:  
 This session describes how we manage the collaboration, through this GitHub folder.  
 
-## 3) Important information on the project:  
+### 3) Important information on the project:  
 This session describes what this project is meant to look like, and our final goal. 
 
 ---------------------------------------------------------------------------------
