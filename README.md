@@ -87,10 +87,9 @@ The correct labels are even=beam, odd=reaction. I am working on that.
 -The most updated version of the Project (on Logistic Regression, Random Forest, DNN, and K-Means)is the one of Andreas, but of course everyone is working on different Models, so this is not so important.
 
 ## 2) Work Organization: 
-BRANCHES:  
-Everyone is taking a different branch. Anyway, more people can work simultaneously on the same file (or same portion of code). Conflicts must be resolved manually carefully. Please, if your are not sure what to do, ask before commits.  
+- Branches: Everyone is taking a different branch. Anyway, more people can work simultaneously on the same file (or same portion of code). Conflicts must be resolved manually carefully. Please, if your are not sure what to do, ask before commits.  
 Rule: you can always commit to your branch (it is your personal space), but if you want to merge ask permission, or discuss with your colleagues.  
-Maybe some of this is obvious to some of you, but not everyone has use Git extensively before.
+Maybe some of this is obvious to some of you, but not everyone has used Git extensively before.
 
 
 
