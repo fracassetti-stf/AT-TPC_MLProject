@@ -7,8 +7,8 @@ Andreas Ceulemans(AC), Stefano Fracassetti(SF),  Luca Morselli(LM), Haoran Sun(H
 - `AT_Project_Specifications`: Project specifications.  
 - `AT-TPC_Report.ipynb`: Final Report.  
 - `helper_functions.py`: list of functions used in the report.  
-- `DataFiles`: folder containing the dataset.  
-- `img`: folder containing the pictures used throughout the report.  
+- `DataFiles/`: folder containing the dataset.  
+- `img/`: folder containing the pictures used throughout the report.  
 
 
 
